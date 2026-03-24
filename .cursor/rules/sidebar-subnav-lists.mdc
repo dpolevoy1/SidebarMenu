@@ -14,7 +14,7 @@ Use this pattern for **indented lists under a main nav row** (e.g. Chief of Staf
 |-------|------|
 | **`sidebarSubNavList`** | Wrapper: column flex, `overflow: hidden`, animated `max-height` (collapsed vs expanded) |
 | **`sidebarSubNavListExpanded`** | When the sub-list is open: raises `max-height` so rows are visible |
-| **`sidebarSubNavRowFade`** | Staggered fade on rows; pair with inline **`--stagger`** (0-based index) and list-level **`--n`** (item count) for **0.01s** delay steps (forward on expand, reverse on collapse) |
+| **`sidebarSubNavRowFade`** | Staggered fade on rows; pair with inline **`--stagger`** (0-based index) and list-level **`--n`** (item count) for **0.025s** delay steps (forward on expand, reverse on collapse) |
 | **`chatRow`** | Base row surface (same as chat rows) |
 | **`sidebarSubNavRow`** | Adds **left indent** only: `padding: 8px 12px 8px 44px` (aligns label with parent nav text after the 20px icon + 12px gap) |
 | **`chatLabel`** | Text cell: ellipsis, full typography (see below) |

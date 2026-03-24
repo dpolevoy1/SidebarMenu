@@ -18,6 +18,12 @@ import styles from "./SidebarMenu.module.css";
 const DEFAULT_LOGO =
   "https://www.figma.com/api/mcp/asset/6495e079-37c2-4aab-bb93-875b65fe45c8";
 
+/**
+ * Wait for the outgoing sub-list to finish closing (`.sidebarSubNavList` max-height + row fade)
+ * before changing `activeNavId` and opening the next list — avoids simultaneous collapse/expand.
+ */
+const SUB_NAV_CLOSE_DELAY_MS = 620;
+
 /** Default sub-nav labels — keep in sync with `SidebarMenu` prop defaults; App uses `[0]` as initial selection. */
 export const DEFAULT_CHIEF_OF_STAFF_ITEMS = [
   "Briefing",
@@ -283,12 +289,114 @@ export function SidebarMenu({
   /** Brief row id: after mouse leaves a chat row, show star + label for 100ms (matches design hover-out). */
   const [starExitHint, setStarExitHint] = useState<string | null>(null);
   const starExitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingNavTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const clearPendingNavTimeout = () => {
+    if (pendingNavTimeoutRef.current !== null) {
+      clearTimeout(pendingNavTimeoutRef.current);
+      pendingNavTimeoutRef.current = null;
+    }
+  };
+
+  const activeExpandableSubListIsOpen = (): boolean => {
+    switch (activeNavId) {
+      case "chief-of-staff":
+        return chiefOfStaffListOpen;
+      case "knowledge":
+        return knowledgeListOpen;
+      case "controls":
+        return controlsListOpen;
+      case "wisdom":
+        return wisdomListOpen;
+      default:
+        return false;
+    }
+  };
+
+  const closeActiveExpandableSubList = () => {
+    switch (activeNavId) {
+      case "chief-of-staff":
+        setChiefOfStaffListOpen(false);
+        break;
+      case "knowledge":
+        setKnowledgeListOpen(false);
+        break;
+      case "controls":
+        setControlsListOpen(false);
+        break;
+      case "wisdom":
+        setWisdomListOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const openExpandableSubListForId = (id: SidebarNavId) => {
+    if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
+    else if (id === "knowledge") setKnowledgeListOpen(true);
+    else if (id === "controls") setControlsListOpen(true);
+    else if (id === "wisdom") setWisdomListOpen(true);
+  };
+
+  const completeExpandableNavigation = (id: SidebarNavId) => {
+    onNavClick?.(id);
+    openExpandableSubListForId(id);
+  };
+
+  /** Non-expandable nav rows: delay `onNavClick` if an expandable sub-list is open. */
+  const schedulePlainNavClick = (id: SidebarNavId) => {
+    clearPendingNavTimeout();
+    if (activeExpandableSubListIsOpen()) {
+      closeActiveExpandableSubList();
+      pendingNavTimeoutRef.current = setTimeout(() => {
+        pendingNavTimeoutRef.current = null;
+        onNavClick?.(id);
+      }, SUB_NAV_CLOSE_DELAY_MS);
+    } else {
+      onNavClick?.(id);
+    }
+  };
+
+  /**
+   * Expandable nav: toggle when already active; otherwise navigate after closing any open sub-list.
+   */
+  const handleExpandableNavClick = (id: SidebarNavId) => {
+    clearPendingNavTimeout();
+
+    if (activeNavId === id) {
+      if (id === "chief-of-staff") {
+        setChiefOfStaffListOpen((open) => !open);
+      } else if (id === "knowledge") {
+        setKnowledgeListOpen((open) => !open);
+      } else if (id === "controls") {
+        setControlsListOpen((open) => !open);
+      } else if (id === "wisdom") {
+        setWisdomListOpen((open) => !open);
+      }
+      onNavClick?.(id);
+      return;
+    }
+
+    if (activeExpandableSubListIsOpen()) {
+      closeActiveExpandableSubList();
+      pendingNavTimeoutRef.current = setTimeout(() => {
+        pendingNavTimeoutRef.current = null;
+        completeExpandableNavigation(id);
+      }, SUB_NAV_CLOSE_DELAY_MS);
+    } else {
+      completeExpandableNavigation(id);
+    }
+  };
 
   useEffect(() => {
     return () => {
       if (starExitTimerRef.current !== null) {
         clearTimeout(starExitTimerRef.current);
       }
+      clearPendingNavTimeout();
     };
   }, []);
 
@@ -354,7 +462,7 @@ export function SidebarMenu({
         className={`${styles.navRow} ${active ? styles.navRowActive : ""} ${
           hoverChevron ? styles.navRowWithHoverChevron : ""
         } ${hoverShortcut ? styles.navRowWithHoverShortcut : ""}`}
-        onClick={() => onNavClick?.(id)}
+        onClick={() => schedulePlainNavClick(id)}
         {...(hoverShortcut
           ? ({ "aria-keyshortcuts": "Shift+Meta+O" } as const)
           : undefined)}
@@ -436,14 +544,7 @@ export function SidebarMenu({
                 ? chiefOfStaffListOpen
                 : undefined
             }
-            onClick={() => {
-              if (activeNavId === "chief-of-staff") {
-                setChiefOfStaffListOpen((open) => !open);
-              } else {
-                setChiefOfStaffListOpen(true);
-              }
-              onNavClick?.("chief-of-staff");
-            }}
+            onClick={() => handleExpandableNavClick("chief-of-staff")}
           >
             <NavIcon icon={LocationUser03Icon} />
             <span className={styles.navLabel}>Chief of Staff</span>
@@ -451,16 +552,16 @@ export function SidebarMenu({
               <NavHoverChevron />
             </span>
           </button>
-          {activeNavId === "chief-of-staff" ? (
-            <ExpandableSubNavList
-              items={chiefOfStaffItems}
-              ariaLabel="Chief of Staff"
-              expanded={chiefOfStaffListOpen}
-              selectedTitle={selectedChiefOfStaffItem}
-              onItemClick={onChiefOfStaffItemClick}
-              keyPrefix="cos"
-            />
-          ) : null}
+          <ExpandableSubNavList
+            items={chiefOfStaffItems}
+            ariaLabel="Chief of Staff"
+            expanded={
+              activeNavId === "chief-of-staff" && chiefOfStaffListOpen
+            }
+            selectedTitle={selectedChiefOfStaffItem}
+            onItemClick={onChiefOfStaffItemClick}
+            keyPrefix="cos"
+          />
           {navButton("reports", "Reports", () => (
             <NavIcon icon={DocumentAttachmentIcon} />
           ))}
@@ -481,14 +582,7 @@ export function SidebarMenu({
             aria-expanded={
               activeNavId === "knowledge" ? knowledgeListOpen : undefined
             }
-            onClick={() => {
-              if (activeNavId === "knowledge") {
-                setKnowledgeListOpen((open) => !open);
-              } else {
-                setKnowledgeListOpen(true);
-              }
-              onNavClick?.("knowledge");
-            }}
+            onClick={() => handleExpandableNavClick("knowledge")}
           >
             <NavIcon icon={BookBookmark02Icon} />
             <span className={styles.navLabel}>Knowledge</span>
@@ -496,16 +590,14 @@ export function SidebarMenu({
               <NavHoverChevron />
             </span>
           </button>
-          {activeNavId === "knowledge" ? (
-            <ExpandableSubNavList
-              items={knowledgeItems}
-              ariaLabel="Knowledge"
-              expanded={knowledgeListOpen}
-              selectedTitle={selectedKnowledgeItem}
-              onItemClick={onKnowledgeItemClick}
-              keyPrefix="know"
-            />
-          ) : null}
+          <ExpandableSubNavList
+            items={knowledgeItems}
+            ariaLabel="Knowledge"
+            expanded={activeNavId === "knowledge" && knowledgeListOpen}
+            selectedTitle={selectedKnowledgeItem}
+            onItemClick={onKnowledgeItemClick}
+            keyPrefix="know"
+          />
           <button
             type="button"
             className={`${styles.navRow} ${
@@ -516,14 +608,7 @@ export function SidebarMenu({
             aria-expanded={
               activeNavId === "controls" ? controlsListOpen : undefined
             }
-            onClick={() => {
-              if (activeNavId === "controls") {
-                setControlsListOpen((open) => !open);
-              } else {
-                setControlsListOpen(true);
-              }
-              onNavClick?.("controls");
-            }}
+            onClick={() => handleExpandableNavClick("controls")}
           >
             <NavIcon icon={Settings04Icon} />
             <span className={styles.navLabel}>Controls</span>
@@ -531,16 +616,14 @@ export function SidebarMenu({
               <NavHoverChevron />
             </span>
           </button>
-          {activeNavId === "controls" ? (
-            <ExpandableSubNavList
-              items={controlsItems}
-              ariaLabel="Controls"
-              expanded={controlsListOpen}
-              selectedTitle={selectedControlsItem}
-              onItemClick={onControlsItemClick}
-              keyPrefix="ctrl"
-            />
-          ) : null}
+          <ExpandableSubNavList
+            items={controlsItems}
+            ariaLabel="Controls"
+            expanded={activeNavId === "controls" && controlsListOpen}
+            selectedTitle={selectedControlsItem}
+            onItemClick={onControlsItemClick}
+            keyPrefix="ctrl"
+          />
           <button
             type="button"
             className={`${styles.navRow} ${
@@ -551,14 +634,7 @@ export function SidebarMenu({
             aria-expanded={
               activeNavId === "wisdom" ? wisdomListOpen : undefined
             }
-            onClick={() => {
-              if (activeNavId === "wisdom") {
-                setWisdomListOpen((open) => !open);
-              } else {
-                setWisdomListOpen(true);
-              }
-              onNavClick?.("wisdom");
-            }}
+            onClick={() => handleExpandableNavClick("wisdom")}
           >
             <NavIcon icon={Brain03Icon} />
             <span className={styles.navLabel}>Wisdom</span>
@@ -566,16 +642,14 @@ export function SidebarMenu({
               <NavHoverChevron />
             </span>
           </button>
-          {activeNavId === "wisdom" ? (
-            <ExpandableSubNavList
-              items={wisdomItems}
-              ariaLabel="Wisdom"
-              expanded={wisdomListOpen}
-              selectedTitle={selectedWisdomItem}
-              onItemClick={onWisdomItemClick}
-              keyPrefix="wis"
-            />
-          ) : null}
+          <ExpandableSubNavList
+            items={wisdomItems}
+            ariaLabel="Wisdom"
+            expanded={activeNavId === "wisdom" && wisdomListOpen}
+            selectedTitle={selectedWisdomItem}
+            onItemClick={onWisdomItemClick}
+            keyPrefix="wis"
+          />
         </div>
 
         <div className={styles.section}>

@@ -510,23 +510,31 @@
   width: 100%;
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height 0.58s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebarSubNavListExpanded {
   max-height: 520px;
 }
 
-/* Staggered fade: 0.01s between lines; reverse order on collapse */
+/*
+ * Staggered fade + slide: forward order on expand, reverse on collapse.
+ * Expand uses the same easing/duration as max-height so rows stay in sync as the clip opens
+ * (short opacity-only stagger finished before the panel finished opening — looked like no expand animation).
+ */
 .sidebarSubNavRowFade {
   opacity: 0;
-  transition: opacity 0.22s ease;
-  transition-delay: calc((var(--n, 1) - 1 - var(--stagger, 0)) * 0.01s);
+  transform: translateY(-6px);
+  transition:
+    opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: calc((var(--n, 1) - 1 - var(--stagger, 0)) * 0.034s);
 }
 
 .sidebarSubNavListExpanded .sidebarSubNavRowFade {
   opacity: 1;
-  transition-delay: calc(var(--stagger, 0) * 0.01s);
+  transform: translateY(0);
+  transition-delay: calc(var(--stagger, 0) * 0.034s);
 }
 
 /* Indented row: .chatRow + this; same typography as Starred/Recents; 44px left = align with parent label */
@@ -738,6 +746,7 @@
   .sidebarSubNavRowFade {
     transition: none;
     transition-delay: 0s !important;
+    transform: none;
   }
 
   .sidebarSubNavListExpanded .sidebarSubNavRowFade {
