@@ -1,0 +1,751 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+  min-height: 100%;
+  background: var(--color-primary-200);
+  box-sizing: border-box;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  flex-shrink: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  overflow: visible;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.collapseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 38px;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-primary-200);
+  color: var(--color-secondary-600);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.collapseBtn:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  width: 100%;
+}
+
+.orgNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.orgName {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 6px - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--color-secondary-600);
+}
+
+.orgNameChevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center center;
+  transition: opacity 0.12s ease;
+  color: var(--color-secondary-700);
+}
+
+.orgNameChevron svg {
+  pointer-events: none;
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.header:hover .orgNameChevron,
+.header:focus-within .orgNameChevron {
+  opacity: 1;
+}
+
+.header:hover .orgNameChevron svg,
+.header:focus-within .orgNameChevron svg {
+  transform: scale(1.08);
+}
+
+.userName {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.18px;
+  color: var(--color-secondary-500);
+}
+
+.menu {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 12px 24px;
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  max-height: 32px;
+  padding: 8px 12px;
+  margin: 0;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 6px;
+  background: var(--color-primary-200);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.18px;
+  color: var(--color-secondary-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sectionHeadline {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  min-height: 32px;
+  padding: 8px 12px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-primary-200);
+  cursor: pointer;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.18px;
+  color: var(--color-secondary-500);
+  text-align: left;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.sectionHeadline:hover {
+  background: var(--color-primary-300-hover);
+  color: var(--color-secondary-700);
+}
+
+.sectionHeadline:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+.sectionHeadlineInner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.sectionHeadlineLabel {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 6px - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectionHeadChevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center center;
+  transition: opacity 0.12s ease;
+  color: var(--color-secondary-600);
+}
+
+.sectionHeadline:hover .sectionHeadChevron,
+.sectionHeadline:focus-visible .sectionHeadChevron {
+  opacity: 1;
+}
+
+.sectionHeadChevron svg {
+  pointer-events: none;
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* Open: vertical flip on wrapper — same pattern as .navRowWithHoverChevron.navRowActive .navChevron (color stays Secondary/600) */
+.sectionHeadline:not(.sectionHeadlineCollapsed) .sectionHeadChevron {
+  transform: scaleY(-1);
+}
+
+/* Hover scale on SVG only — same as .navRowWithHoverChevron:hover .navChevron svg */
+.sectionHeadline:hover .sectionHeadChevron svg,
+.sectionHeadline:focus-visible .sectionHeadChevron svg {
+  transform: scale(1.08);
+}
+
+.navRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  min-height: 38px;
+  max-height: 38px;
+  padding: 8px 12px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-primary-200);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.14px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-secondary-600);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+/* Same hover as nav rows: Primary-300 hover + Secondary-700 */
+.navRow:hover:not(.navRowActive),
+.collapseBtn:hover {
+  background: var(--color-primary-300-hover);
+  color: var(--color-secondary-700);
+}
+
+.navRow:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+.navRowActive {
+  background: var(--color-primary-400-focus);
+  color: var(--color-primary-600);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* Let clicks hit the <button>, not the SVG hit-area */
+.navIcon svg,
+.newQuestionIcon svg,
+.navChevron svg,
+.collapseBtn svg {
+  pointer-events: none;
+}
+
+.collapseBtn svg,
+.navChevron svg {
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.navRow:hover .navIcon {
+  transform: scale(1.06);
+}
+
+.collapseBtn:hover svg {
+  transform: scale(1.06);
+}
+
+.navRowWithHoverChevron:hover .navChevron svg,
+.navRowWithHoverChevron:focus-visible .navChevron svg {
+  transform: scale(1.08);
+}
+
+.navLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Inline shortcut on the right (hover/focus); same layering idea as .navChevron */
+.navRowWithHoverShortcut {
+  position: relative;
+}
+
+.navShortcut {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 24px;
+  margin: 0;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #fff;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 12px;
+  letter-spacing: 0.15px;
+  text-align: center;
+  color: var(--Secondary-600, #3e4a5e);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  white-space: nowrap;
+}
+
+.navRowWithHoverShortcut:hover .navShortcut,
+.navRowWithHoverShortcut:focus-visible .navShortcut {
+  opacity: 1;
+}
+
+/* Selected row: keep shortcut visible (matches .navRowWithHoverChevron.navRowActive .navChevron) */
+.navRowWithHoverShortcut.navRowActive .navShortcut {
+  opacity: 1;
+  color: var(--color-primary-600);
+}
+
+.navRowWithHoverChevron {
+  position: relative;
+}
+
+.navChevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease;
+  color: currentColor;
+}
+
+.navRowWithHoverChevron:hover .navChevron,
+.navRowWithHoverChevron:focus-visible .navChevron {
+  opacity: 1;
+}
+
+/* Selected: vertical flip (points up), same color as selected label — Primary-600 */
+.navRowWithHoverChevron.navRowActive .navChevron {
+  opacity: 1;
+  color: var(--color-primary-600);
+  transform: translateY(-50%) scaleY(-1);
+}
+
+/* Expandable sub-nav (Chief of Staff, Knowledge, …): chevron down when selected but list collapsed */
+.navRowWithHoverChevron.navRowActive.navRowExpandableSubNav:not(
+    .navRowSubNavExpanded
+  )
+  .navChevron {
+  transform: translateY(-50%);
+}
+
+.newQuestionIcon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.navRow:hover .newQuestionIcon {
+  transform: scale(1.06);
+}
+
+.newQuestionBg {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: var(--color-primary-600);
+}
+
+.newQuestionPlus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.chatRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  min-height: 38px;
+  max-height: 38px;
+  padding: 8px 12px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-primary-200);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.14px;
+  color: var(--Secondary-600, #3e4a5e);
+  text-align: left;
+  cursor: pointer;
+}
+
+.chatRow:hover:not(.chatRowSelected) {
+  background: var(--color-primary-300-hover);
+  color: var(--color-secondary-700);
+}
+
+.chatRowSelected {
+  background: var(--color-primary-400-focus);
+  color: var(--color-primary-600);
+}
+
+.chatRow:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+/* Sub-nav list under an expandable nav item — reuse for other lists (see .cursor/rules/sidebar-subnav-lists.mdc) */
+.sidebarSubNavList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarSubNavListExpanded {
+  max-height: 520px;
+}
+
+/* Staggered fade: 0.01s between lines; reverse order on collapse */
+.sidebarSubNavRowFade {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  transition-delay: calc((var(--n, 1) - 1 - var(--stagger, 0)) * 0.01s);
+}
+
+.sidebarSubNavListExpanded .sidebarSubNavRowFade {
+  opacity: 1;
+  transition-delay: calc(var(--stagger, 0) * 0.01s);
+}
+
+/* Indented row: .chatRow + this; same typography as Starred/Recents; 44px left = align with parent label */
+.sidebarSubNavRow {
+  box-sizing: border-box;
+  padding: 8px 12px 8px 44px;
+}
+
+.chatLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.14px;
+}
+
+/* Starred / Recents: same layout; star fades in on row hover */
+.chatRowStarred,
+.chatRowRecent {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  max-width: 300px;
+  height: 38px;
+  max-height: 38px;
+  padding: 8px 12px;
+  align-items: center;
+  gap: 0;
+  cursor: default;
+}
+
+.chatRowMain {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.chatRowStarred:hover .chatRowMain,
+.chatRowStarred:focus-within .chatRowMain {
+  /* Reserve space for star + gap so title ellipses; star itself does not resize in layout */
+  padding-right: 36px;
+}
+
+/* Recents: reserve title space only on row hover or when the star is keyboard-focused (not :focus-within, so click focus does not keep the star visible) */
+.chatRowRecent:hover .chatRowMain,
+.chatRowRecent:has(.chatStarBtn:focus-visible) .chatRowMain {
+  padding-right: 36px;
+}
+
+/* Anchor for star control + optional exit-hint label (to the left of the icon) */
+.chatStarTooltipWrap {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  max-width: min(200px, calc(100% - 24px));
+}
+
+.chatStarExitLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 12px;
+  letter-spacing: 0.15px;
+  text-align: right;
+  color: var(--color-secondary-600);
+  pointer-events: none;
+}
+
+/* After pointer leaves the row: 100ms phase — keep star visible and show label (JS-driven class) */
+.chatRowStarExitHint .chatRowMain {
+  padding-right: 140px;
+}
+
+.chatRowStarExitHint .chatStarBtn {
+  opacity: 1;
+  pointer-events: none;
+}
+
+.chatStarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.chatRowStarred:hover .chatStarBtn,
+.chatRowStarred:focus-within .chatStarBtn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Recents: show star on row hover or when star has keyboard focus — not on generic :focus-within (avoids star sticking after mouse click) */
+.chatRowRecent:hover .chatStarBtn,
+.chatRowRecent .chatStarBtn:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chatStarBtn:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 0;
+}
+
+.chatStarBtn svg {
+  pointer-events: none;
+}
+
+.chatRowStarred .chatStarBtn svg path {
+  fill: var(--color-additional-orange);
+  stroke: var(--color-additional-orange);
+}
+
+/* Recents: default gray star; orange when this chat is also in Starred */
+.chatRowRecent .chatStarBtn svg path {
+  fill: var(--Secondary-300, #c5ced9);
+  stroke: var(--Secondary-300, #c5ced9);
+}
+
+.chatRowRecent .chatStarBtn.chatStarInStarred svg path {
+  fill: var(--color-additional-orange);
+  stroke: var(--color-additional-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navIcon,
+  .newQuestionIcon,
+  .collapseBtn svg,
+  .navChevron svg,
+  .sectionHeadChevron svg {
+    transition: none;
+  }
+
+  .navRow:hover .navIcon,
+  .navRow:hover .newQuestionIcon,
+  .collapseBtn:hover svg,
+  .navRowWithHoverChevron:hover .navChevron svg,
+  .navRowWithHoverChevron:focus-visible .navChevron svg {
+    transform: none;
+  }
+
+  .sectionHeadline:hover .sectionHeadChevron svg,
+  .sectionHeadline:focus-visible .sectionHeadChevron svg {
+    transform: none;
+  }
+
+  .orgNameChevron svg {
+    transition: none;
+  }
+
+  .header:hover .orgNameChevron svg,
+  .header:focus-within .orgNameChevron svg {
+    transform: none;
+  }
+
+  .chatStarBtn {
+    transition: none;
+  }
+
+  .navShortcut {
+    transition: none;
+  }
+
+  .sidebarSubNavList {
+    transition: none;
+  }
+
+  .sidebarSubNavRowFade {
+    transition: none;
+    transition-delay: 0s !important;
+  }
+
+  .sidebarSubNavListExpanded .sidebarSubNavRowFade {
+    opacity: 1;
+  }
+
+  .sidebarSubNavList:not(.sidebarSubNavListExpanded) .sidebarSubNavRowFade {
+    opacity: 0;
+  }
+
+}

@@ -1,0 +1,30 @@
+/**
+ * Assemble color palette — names mirror Figma variables (Design system).
+ * Examples: Primary/200, Primary/300 - Hover, Secondary/600, Additional/orange
+ */
+
+:root {
+  /* Primary */
+  --color-primary-200: #f7f9ff;
+  --color-primary-300-hover: #f2f6ff;
+  --color-primary-400-focus: #edf2ff;
+  --color-primary-600: #1745f7;
+
+  /* Secondary */
+  --color-secondary-300: #c5ced9;
+  --color-secondary-500: #67748b;
+  --color-secondary-600: #3e4a5e;
+  --color-secondary-700: #2e3747;
+  /* Figma token alias (tooltips / overlays) */
+  --Secondary-300: var(--color-secondary-300);
+  --Secondary-600: var(--color-secondary-600);
+
+  /* Additional */
+  --color-additional-orange: #ff7b00;
+
+  /* Neutral */
+  --color-neutral-white: #ffffff;
+  /* Tooltip surface — Figma Color-Neutral-600 (distinct from gray neutral-600) */
+  --Color-Neutral-600: #02071b;
+  --Neutral-100: var(--color-neutral-white);
+}

@@ -1,0 +1,43 @@
+---
+description: Reusable sidebar sub-nav list (layout + typography under expandable nav items)
+globs: "**/SidebarMenu/**/*"
+alwaysApply: false
+---
+
+# Sidebar sub-navigation lists
+
+Use this pattern for **indented lists under a main nav row** (e.g. Chief of Staff, Knowledge, Wisdom) when the design matches **Starred / Recents chat rows** but **without a star icon**.
+
+## CSS modules (`SidebarMenu.module.css`)
+
+| Class | Role |
+|-------|------|
+| **`sidebarSubNavList`** | Wrapper: column flex, `overflow: hidden`, animated `max-height` (collapsed vs expanded) |
+| **`sidebarSubNavListExpanded`** | When the sub-list is open: raises `max-height` so rows are visible |
+| **`sidebarSubNavRowFade`** | Staggered fade on rows; pair with inline **`--stagger`** (0-based index) and list-level **`--n`** (item count) for **0.01s** delay steps (forward on expand, reverse on collapse) |
+| **`chatRow`** | Base row surface (same as chat rows) |
+| **`sidebarSubNavRow`** | Adds **left indent** only: `padding: 8px 12px 8px 44px` (aligns label with parent nav text after the 20px icon + 12px gap) |
+| **`chatLabel`** | Text cell: ellipsis, full typography (see below) |
+| **`chatRowSelected`** | Selected row (optional) |
+
+Do **not** put `font: inherit` on the row modifier; it overrides `.chatRow` typography.
+
+## Typography (shared with Starred / Recents)
+
+- **Row (`.chatRow`)**: `overflow: hidden`; `color: var(--Secondary-600, #3E4A5E)`; Inter stack; `font-size: 14px`; `font-weight: 400`; `line-height: 22px`; `letter-spacing: 0.14px`
+- **Label (`.chatLabel`)**: same sizes + `overflow: hidden`; `text-overflow: ellipsis`; `white-space: nowrap`; `color: inherit` (hover uses `Secondary-700` / selected from `chatRowSelected`)
+
+## Row structure
+
+- One **`<button type="button">`** per row (or equivalent interactive control) with **`chatRow` + `sidebarSubNavRow` + `sidebarSubNavRowFade`** + optional **`chatRowSelected`** when using the shared expand/collapse animation.
+- While the parent nav is active, keep the sub-list **mounted** (toggle only **`sidebarSubNavListExpanded`** + `aria-hidden` / `inert`) so **fade-out** can run before unmounting when switching away.
+- Inner text: **`<span className={styles.chatLabel}>`** only (no star column).
+- **Height**: 38px row from `.chatRow` min/max height and padding.
+
+## Expandable nav row (chevron)
+
+Use **`navRowExpandableSubNav`** on the nav `<button>` and **`navRowSubNavExpanded`** when the sub-list is open (chevron points up). Same pattern for Chief of Staff, Knowledge, Controls, and Wisdom.
+
+## Reference implementation
+
+`SidebarMenu.tsx`: expandable nav ids `chief-of-staff`, `knowledge`, `controls`, `wisdom` when the respective sub-list is expanded.
