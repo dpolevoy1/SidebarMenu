@@ -401,6 +401,16 @@ export function SidebarMenu({
   }, []);
 
   useEffect(() => {
+    if (sidebarCollapsed) {
+      clearPendingNavTimeout();
+      setChiefOfStaffListOpen(false);
+      setKnowledgeListOpen(false);
+      setControlsListOpen(false);
+      setWisdomListOpen(false);
+    }
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
     if (activeNavId !== "chief-of-staff") {
       setChiefOfStaffListOpen(false);
     }
@@ -439,6 +449,18 @@ export function SidebarMenu({
     newQuestionShortcut === null ? undefined : (newQuestionShortcut ?? "⇧⌘O");
 
   const collapseActionLabel = sidebarCollapsed ? "Open sidebar" : "Collapse sidebar";
+
+  const wrapCollapsedNavLabel = (label: string, node: ReactNode) => {
+    if (!sidebarCollapsed) return node;
+    return (
+      <Tooltip
+        label={label}
+        wrapperClassName={styles.collapsedNavTooltipWrap}
+      >
+        {node}
+      </Tooltip>
+    );
+  };
 
   type NavButtonOptions = {
     /** Shortcut text on the right; fades in on row hover/focus (not a floating tooltip). */
@@ -482,43 +504,99 @@ export function SidebarMenu({
       </button>
     );
 
+    if (sidebarCollapsed) {
+      return (
+        <Tooltip
+          label={label}
+          shortcut={hoverShortcut ? newQuestionShortcutBadge : undefined}
+          wrapperClassName={styles.collapsedNavTooltipWrap}
+        >
+          {row}
+        </Tooltip>
+      );
+    }
+
     return row;
   };
 
   return (
-    <aside className={styles.sidebar} aria-label="Main navigation">
+    <aside
+      className={`${styles.sidebar} ${
+        sidebarCollapsed ? styles.sidebarCollapsed : ""
+      }`}
+      aria-label="Main navigation"
+    >
       <header className={styles.header}>
         <div className={styles.logoRow}>
-          <div className={styles.logo}>
-            <img src={logoSrc} alt="" width={40} height={40} />
-          </div>
-          <Tooltip label={collapseActionLabel} shortcut="⌘.">
-            <button
-              type="button"
-              className={styles.collapseBtn}
-              onClick={onToggleCollapse}
-              aria-label={collapseActionLabel}
-              aria-keyshortcuts="Meta+Period"
+          {sidebarCollapsed ? (
+            <Tooltip
+              label="Open sidebar"
+              shortcut="⌘."
+              wrapperClassName={styles.collapsedLogoTooltipWrap}
             >
-              <HugeiconsIcon
-                icon={PanelLeftIcon}
-                size={20}
-                strokeWidth={1.75}
-                color="currentColor"
-                aria-hidden
-              />
-            </button>
-          </Tooltip>
+              <div
+                className={`${styles.logoAnchor} ${styles.logoAnchorCollapsed}`}
+              >
+                <div className={styles.logo}>
+                  <img src={logoSrc} alt="" width={40} height={40} />
+                </div>
+                <span
+                  className={styles.collapsedSidebarCtrlIcon}
+                  aria-hidden
+                >
+                  <HugeiconsIcon
+                    icon={PanelLeftIcon}
+                    size={20}
+                    strokeWidth={1.75}
+                    color="currentColor"
+                    aria-hidden
+                  />
+                </span>
+                <button
+                  type="button"
+                  className={styles.collapsedOpenHitArea}
+                  onClick={() => onToggleCollapse?.()}
+                  aria-label="Open sidebar"
+                  aria-keyshortcuts="Meta+Period"
+                />
+              </div>
+            </Tooltip>
+          ) : (
+            <>
+              <div className={styles.logo}>
+                <img src={logoSrc} alt="" width={40} height={40} />
+              </div>
+              <Tooltip label={collapseActionLabel} shortcut="⌘.">
+                <button
+                  type="button"
+                  className={styles.collapseBtn}
+                  onClick={() => onToggleCollapse?.()}
+                  aria-label={collapseActionLabel}
+                  aria-keyshortcuts="Meta+Period"
+                >
+                  <HugeiconsIcon
+                    icon={PanelLeftIcon}
+                    size={20}
+                    strokeWidth={1.75}
+                    color="currentColor"
+                    aria-hidden
+                  />
+                </button>
+              </Tooltip>
+            </>
+          )}
         </div>
-        <div className={styles.headline}>
-          <div className={styles.orgNameRow}>
-            <p className={styles.orgName}>{organizationName}</p>
-            <span className={styles.orgNameChevron} aria-hidden>
-              <WorkspaceSwitcherChevron />
-            </span>
+        {!sidebarCollapsed ? (
+          <div className={styles.headline}>
+            <div className={styles.orgNameRow}>
+              <p className={styles.orgName}>{organizationName}</p>
+              <span className={styles.orgNameChevron} aria-hidden>
+                <WorkspaceSwitcherChevron />
+              </span>
+            </div>
+            <p className={styles.userName}>{userName}</p>
           </div>
-          <p className={styles.userName}>{userName}</p>
-        </div>
+        ) : null}
       </header>
 
       <nav className={styles.menu}>
@@ -532,26 +610,29 @@ export function SidebarMenu({
               ? { hoverShortcut: newQuestionShortcutBadge }
               : {},
           )}
-          <button
-            type="button"
-            className={`${styles.navRow} ${
-              activeNavId === "chief-of-staff" ? styles.navRowActive : ""
-            } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
-              chiefOfStaffListOpen ? styles.navRowSubNavExpanded : ""
-            }`}
-            aria-expanded={
-              activeNavId === "chief-of-staff"
-                ? chiefOfStaffListOpen
-                : undefined
-            }
-            onClick={() => handleExpandableNavClick("chief-of-staff")}
-          >
-            <NavIcon icon={LocationUser03Icon} />
-            <span className={styles.navLabel}>Chief of Staff</span>
-            <span className={styles.navChevron} aria-hidden>
-              <NavHoverChevron />
-            </span>
-          </button>
+          {wrapCollapsedNavLabel(
+            "Chief of Staff",
+            <button
+              type="button"
+              className={`${styles.navRow} ${
+                activeNavId === "chief-of-staff" ? styles.navRowActive : ""
+              } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
+                chiefOfStaffListOpen ? styles.navRowSubNavExpanded : ""
+              }`}
+              aria-expanded={
+                activeNavId === "chief-of-staff"
+                  ? chiefOfStaffListOpen
+                  : undefined
+              }
+              onClick={() => handleExpandableNavClick("chief-of-staff")}
+            >
+              <NavIcon icon={LocationUser03Icon} />
+              <span className={styles.navLabel}>Chief of Staff</span>
+              <span className={styles.navChevron} aria-hidden>
+                <NavHoverChevron />
+              </span>
+            </button>,
+          )}
           <ExpandableSubNavList
             items={chiefOfStaffItems}
             ariaLabel="Chief of Staff"
@@ -572,24 +653,27 @@ export function SidebarMenu({
 
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Intelligence</p>
-          <button
-            type="button"
-            className={`${styles.navRow} ${
-              activeNavId === "knowledge" ? styles.navRowActive : ""
-            } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
-              knowledgeListOpen ? styles.navRowSubNavExpanded : ""
-            }`}
-            aria-expanded={
-              activeNavId === "knowledge" ? knowledgeListOpen : undefined
-            }
-            onClick={() => handleExpandableNavClick("knowledge")}
-          >
-            <NavIcon icon={BookBookmark02Icon} />
-            <span className={styles.navLabel}>Knowledge</span>
-            <span className={styles.navChevron} aria-hidden>
-              <NavHoverChevron />
-            </span>
-          </button>
+          {wrapCollapsedNavLabel(
+            "Knowledge",
+            <button
+              type="button"
+              className={`${styles.navRow} ${
+                activeNavId === "knowledge" ? styles.navRowActive : ""
+              } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
+                knowledgeListOpen ? styles.navRowSubNavExpanded : ""
+              }`}
+              aria-expanded={
+                activeNavId === "knowledge" ? knowledgeListOpen : undefined
+              }
+              onClick={() => handleExpandableNavClick("knowledge")}
+            >
+              <NavIcon icon={BookBookmark02Icon} />
+              <span className={styles.navLabel}>Knowledge</span>
+              <span className={styles.navChevron} aria-hidden>
+                <NavHoverChevron />
+              </span>
+            </button>,
+          )}
           <ExpandableSubNavList
             items={knowledgeItems}
             ariaLabel="Knowledge"
@@ -598,24 +682,27 @@ export function SidebarMenu({
             onItemClick={onKnowledgeItemClick}
             keyPrefix="know"
           />
-          <button
-            type="button"
-            className={`${styles.navRow} ${
-              activeNavId === "controls" ? styles.navRowActive : ""
-            } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
-              controlsListOpen ? styles.navRowSubNavExpanded : ""
-            }`}
-            aria-expanded={
-              activeNavId === "controls" ? controlsListOpen : undefined
-            }
-            onClick={() => handleExpandableNavClick("controls")}
-          >
-            <NavIcon icon={Settings04Icon} />
-            <span className={styles.navLabel}>Controls</span>
-            <span className={styles.navChevron} aria-hidden>
-              <NavHoverChevron />
-            </span>
-          </button>
+          {wrapCollapsedNavLabel(
+            "Controls",
+            <button
+              type="button"
+              className={`${styles.navRow} ${
+                activeNavId === "controls" ? styles.navRowActive : ""
+              } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
+                controlsListOpen ? styles.navRowSubNavExpanded : ""
+              }`}
+              aria-expanded={
+                activeNavId === "controls" ? controlsListOpen : undefined
+              }
+              onClick={() => handleExpandableNavClick("controls")}
+            >
+              <NavIcon icon={Settings04Icon} />
+              <span className={styles.navLabel}>Controls</span>
+              <span className={styles.navChevron} aria-hidden>
+                <NavHoverChevron />
+              </span>
+            </button>,
+          )}
           <ExpandableSubNavList
             items={controlsItems}
             ariaLabel="Controls"
@@ -624,24 +711,27 @@ export function SidebarMenu({
             onItemClick={onControlsItemClick}
             keyPrefix="ctrl"
           />
-          <button
-            type="button"
-            className={`${styles.navRow} ${
-              activeNavId === "wisdom" ? styles.navRowActive : ""
-            } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
-              wisdomListOpen ? styles.navRowSubNavExpanded : ""
-            }`}
-            aria-expanded={
-              activeNavId === "wisdom" ? wisdomListOpen : undefined
-            }
-            onClick={() => handleExpandableNavClick("wisdom")}
-          >
-            <NavIcon icon={Brain03Icon} />
-            <span className={styles.navLabel}>Wisdom</span>
-            <span className={styles.navChevron} aria-hidden>
-              <NavHoverChevron />
-            </span>
-          </button>
+          {wrapCollapsedNavLabel(
+            "Wisdom",
+            <button
+              type="button"
+              className={`${styles.navRow} ${
+                activeNavId === "wisdom" ? styles.navRowActive : ""
+              } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
+                wisdomListOpen ? styles.navRowSubNavExpanded : ""
+              }`}
+              aria-expanded={
+                activeNavId === "wisdom" ? wisdomListOpen : undefined
+              }
+              onClick={() => handleExpandableNavClick("wisdom")}
+            >
+              <NavIcon icon={Brain03Icon} />
+              <span className={styles.navLabel}>Wisdom</span>
+              <span className={styles.navChevron} aria-hidden>
+                <NavHoverChevron />
+              </span>
+            </button>,
+          )}
           <ExpandableSubNavList
             items={wisdomItems}
             ariaLabel="Wisdom"

@@ -17,6 +17,7 @@ const INITIAL_STARRED_CHATS = [
 ];
 
 export default function App() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeNavId, setActiveNavId] = useState<SidebarNavId>(
     "post-meeting-insights",
   );
@@ -41,6 +42,8 @@ export default function App() {
       <SidebarMenu
         organizationName="Unilever"
         userName="Maximilian Metti"
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
         activeNavId={activeNavId}
         onNavClick={(id) => {
           setActiveNavId(id);
