@@ -496,13 +496,6 @@
   transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-/* Lottie matches Hugeicons 20×20 slot (ic_knowledge.json is 20×20). */
-.knowledgeLottie {
-  width: 20px;
-  height: 20px;
-  line-height: 0;
-}
-
 /* Let clicks hit the <button>, not the SVG hit-area */
 .navIcon svg,
 .newQuestionIcon svg,
