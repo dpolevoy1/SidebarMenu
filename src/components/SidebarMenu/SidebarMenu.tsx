@@ -523,7 +523,7 @@ export function SidebarMenu({
       return (
         <Tooltip
           label={label}
-          shortcut={hoverShortcut ? newQuestionShortcutBadge : undefined}
+          shortcut={hoverShortcut}
           wrapperClassName={styles.collapsedNavTooltipWrap}
         >
           {row}
