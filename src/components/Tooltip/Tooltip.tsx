@@ -103,16 +103,32 @@ export function Tooltip({
     const wrap = wrapRef.current;
     if (!wrap) return;
 
+    let pendingFocusRaf = 0;
+
+    const applyFocusVisiblePosition = () => {
+      if (!wrap.isConnected) return;
+      const active = document.activeElement;
+      if (
+        !(active instanceof HTMLElement) ||
+        !wrap.contains(active) ||
+        !active.matches(":focus-visible")
+      ) {
+        return;
+      }
+      setPos(positionFromElement(active));
+    };
+
     const onFocusIn = (e: FocusEvent) => {
       const t = e.target;
       if (!(t instanceof HTMLElement) || !wrap.contains(t)) return;
-      const apply = () => {
-        if (t.matches(":focus-visible")) {
-          setPos(positionFromElement(t));
-        }
-      };
-      apply();
-      requestAnimationFrame(apply);
+      applyFocusVisiblePosition();
+      if (pendingFocusRaf !== 0) {
+        cancelAnimationFrame(pendingFocusRaf);
+      }
+      pendingFocusRaf = requestAnimationFrame(() => {
+        pendingFocusRaf = 0;
+        applyFocusVisiblePosition();
+      });
     };
 
     const onFocusOut = (e: FocusEvent) => {
@@ -124,6 +140,9 @@ export function Tooltip({
     wrap.addEventListener("focusin", onFocusIn);
     wrap.addEventListener("focusout", onFocusOut);
     return () => {
+      if (pendingFocusRaf !== 0) {
+        cancelAnimationFrame(pendingFocusRaf);
+      }
       wrap.removeEventListener("focusin", onFocusIn);
       wrap.removeEventListener("focusout", onFocusOut);
     };
