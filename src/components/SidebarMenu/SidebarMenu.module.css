@@ -55,8 +55,14 @@
   transition: background 0.12s ease;
 }
 
-.logoAnchorCollapsed:hover,
-.logoAnchorCollapsed:focus-within {
+/*
+ * Hover “open” affordance is driven by `.logoAnchorCollapsedHover` from React (not :hover alone).
+ * Pure :hover matched as soon as the collapsed logo mounted under the cursor after toggling
+ * collapse, which hid the logo immediately. Keyboard: only :focus-visible on the hit-area
+ * (not :focus-within) so a click that leaves focus on the button does not hide the logo.
+ */
+.logoAnchorCollapsed.logoAnchorCollapsedHover,
+.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible) {
   background: var(--color-primary-300-hover);
 }
 
@@ -64,8 +70,8 @@
   transition: opacity 0.12s ease;
 }
 
-.logoAnchorCollapsed:hover .logo img,
-.logoAnchorCollapsed:focus-within .logo img {
+.logoAnchorCollapsed.logoAnchorCollapsedHover .logo img,
+.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible) .logo img {
   opacity: 0;
 }
 
@@ -87,13 +93,16 @@
   transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-.logoAnchorCollapsed:hover .collapsedSidebarCtrlIcon,
-.logoAnchorCollapsed:focus-within .collapsedSidebarCtrlIcon {
+.logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon,
+.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+  .collapsedSidebarCtrlIcon {
   opacity: 1;
 }
 
-.logoAnchorCollapsed:hover .collapsedSidebarCtrlIcon svg,
-.logoAnchorCollapsed:focus-within .collapsedSidebarCtrlIcon svg {
+.logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon svg,
+.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+  .collapsedSidebarCtrlIcon
+  svg {
   transform: rotate(180deg) scale(1.06);
 }
 
@@ -876,8 +885,10 @@
     transition: none;
   }
 
-  .logoAnchorCollapsed:hover .collapsedSidebarCtrlIcon svg,
-  .logoAnchorCollapsed:focus-within .collapsedSidebarCtrlIcon svg {
+  .logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon svg,
+  .logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+    .collapsedSidebarCtrlIcon
+    svg {
     transform: rotate(180deg);
   }
 

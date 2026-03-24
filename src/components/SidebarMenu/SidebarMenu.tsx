@@ -24,6 +24,9 @@ const DEFAULT_LOGO =
  */
 const SUB_NAV_CLOSE_DELAY_MS = 620;
 
+/** Ignore “hover” on the collapsed logo briefly after toggling so :hover doesn’t apply immediately. */
+const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
+
 /** Default sub-nav labels — keep in sync with `SidebarMenu` prop defaults; App uses `[0]` as initial selection. */
 export const DEFAULT_CHIEF_OF_STAFF_ITEMS = [
   "Briefing",
@@ -292,6 +295,10 @@ export function SidebarMenu({
   const pendingNavTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const collapsedLogoAnchorRef = useRef<HTMLDivElement>(null);
+  const collapsedLogoHoverSuppressedUntilRef = useRef(0);
+  /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
+  const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
 
   const clearPendingNavTimeout = () => {
     if (pendingNavTimeoutRef.current !== null) {
@@ -411,6 +418,21 @@ export function SidebarMenu({
   }, [sidebarCollapsed]);
 
   useEffect(() => {
+    if (!sidebarCollapsed) {
+      setCollapsedLogoHover(false);
+      return;
+    }
+    collapsedLogoHoverSuppressedUntilRef.current =
+      Date.now() + COLLAPSED_LOGO_HOVER_SUPPRESS_MS;
+    setCollapsedLogoHover(false);
+    const t = window.setTimeout(() => {
+      const el = collapsedLogoAnchorRef.current;
+      if (el?.matches(":hover")) setCollapsedLogoHover(true);
+    }, COLLAPSED_LOGO_HOVER_SUPPRESS_MS + 20);
+    return () => window.clearTimeout(t);
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
     if (activeNavId !== "chief-of-staff") {
       setChiefOfStaffListOpen(false);
     }
@@ -449,6 +471,13 @@ export function SidebarMenu({
     newQuestionShortcut === null ? undefined : (newQuestionShortcut ?? "⇧⌘O");
 
   const collapseActionLabel = sidebarCollapsed ? "Open sidebar" : "Collapse sidebar";
+
+  const onCollapsedLogoMouseEnter = () => {
+    if (Date.now() < collapsedLogoHoverSuppressedUntilRef.current) return;
+    setCollapsedLogoHover(true);
+  };
+
+  const onCollapsedLogoMouseLeave = () => setCollapsedLogoHover(false);
 
   const wrapCollapsedNavLabel = (label: string, node: ReactNode) => {
     if (!sidebarCollapsed) return node;
@@ -550,7 +579,12 @@ export function SidebarMenu({
               wrapperClassName={styles.collapsedLogoTooltipWrap}
             >
               <div
-                className={`${styles.logoAnchor} ${styles.logoAnchorCollapsed}`}
+                ref={collapsedLogoAnchorRef}
+                className={`${styles.logoAnchor} ${styles.logoAnchorCollapsed} ${
+                  collapsedLogoHover ? styles.logoAnchorCollapsedHover : ""
+                }`.trim()}
+                onMouseEnter={onCollapsedLogoMouseEnter}
+                onMouseLeave={onCollapsedLogoMouseLeave}
               >
                 <div className={styles.logo}>
                   <img src={logoSrc} alt="" width={40} height={40} />
