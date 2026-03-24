@@ -85,7 +85,11 @@ export function Tooltip({
       const wrap = e.currentTarget;
       if (wrap.matches(":focus-within")) {
         const active = document.activeElement;
-        if (active instanceof HTMLElement && wrap.contains(active)) {
+        if (
+          active instanceof HTMLElement &&
+          wrap.contains(active) &&
+          active.matches(":focus-visible")
+        ) {
           setPos(positionFromElement(active));
           return;
         }
@@ -102,7 +106,13 @@ export function Tooltip({
     const onFocusIn = (e: FocusEvent) => {
       const t = e.target;
       if (!(t instanceof HTMLElement) || !wrap.contains(t)) return;
-      setPos(positionFromElement(t));
+      const apply = () => {
+        if (t.matches(":focus-visible")) {
+          setPos(positionFromElement(t));
+        }
+      };
+      apply();
+      requestAnimationFrame(apply);
     };
 
     const onFocusOut = (e: FocusEvent) => {
