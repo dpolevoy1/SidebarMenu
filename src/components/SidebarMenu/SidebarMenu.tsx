@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import type { LottieRefCurrentProps } from "lottie-react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
-  BookBookmark02Icon,
   Brain03Icon,
   DocumentAttachmentIcon,
   FileViewIcon,
@@ -13,6 +13,7 @@ import {
   StarIcon,
 } from "@hugeicons/core-free-icons";
 import { Tooltip } from "../Tooltip";
+import { KnowledgeNavIcon } from "./KnowledgeNavIcon";
 import styles from "./SidebarMenu.module.css";
 
 const DEFAULT_LOGO =
@@ -296,6 +297,7 @@ export function SidebarMenu({
     null,
   );
   const collapsedLogoAnchorRef = useRef<HTMLDivElement>(null);
+  const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const collapsedLogoHoverSuppressedUntilRef = useRef(0);
   /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
   const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
@@ -478,6 +480,15 @@ export function SidebarMenu({
   };
 
   const onCollapsedLogoMouseLeave = () => setCollapsedLogoHover(false);
+
+  const playKnowledgeHoverAnimation = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    knowledgeLottieRef.current?.goToAndPlay(0, true);
+  };
+
+  const resetKnowledgeIconFrame = () => {
+    knowledgeLottieRef.current?.goToAndStop(0, true);
+  };
 
   const wrapCollapsedNavLabel = (label: string, node: ReactNode) => {
     if (!sidebarCollapsed) return node;
@@ -726,8 +737,10 @@ export function SidebarMenu({
                 activeNavId === "knowledge" ? knowledgeListOpen : undefined
               }
               onClick={() => handleExpandableNavClick("knowledge")}
+              onMouseEnter={playKnowledgeHoverAnimation}
+              onMouseLeave={resetKnowledgeIconFrame}
             >
-              <NavIcon icon={BookBookmark02Icon} />
+              <KnowledgeNavIcon lottieRef={knowledgeLottieRef} />
               <span className={styles.navLabel}>Knowledge</span>
               <span className={styles.navChevron} aria-hidden>
                 <NavHoverChevron />
