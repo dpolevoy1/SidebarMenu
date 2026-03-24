@@ -43,14 +43,32 @@
   width: 100%;
 }
 
-.logoAnchor {
-  position: relative;
-  width: 40px;
-  height: 40px;
+/* One <img> stays mounted in .logoColumn; collapsed overlay stacks on top (no img remount). */
+.logoColumn {
   flex-shrink: 0;
 }
 
+.logoColumnCollapsed {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+/* Tooltip wrap must fill the slot so the collapsed overlay covers the logo. */
+.logoColumnCollapsed .collapsedLogoTooltipWrap {
+  position: absolute;
+  inset: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
 .logoAnchorCollapsed {
+  position: absolute;
+  inset: 0;
   border-radius: 6px;
   transition: background 0.12s ease;
 }
@@ -62,16 +80,16 @@
  * (not :focus-within) so a click that leaves focus on the button does not hide the logo.
  */
 .logoAnchorCollapsed.logoAnchorCollapsedHover,
-.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible) {
+.logoColumnCollapsed:has(.collapsedOpenHitArea:focus-visible) .logoAnchorCollapsed {
   background: var(--color-primary-300-hover);
 }
 
-.logoAnchorCollapsed .logo img {
+.logoColumnCollapsed .logo img {
   transition: opacity 0.12s ease;
 }
 
-.logoAnchorCollapsed.logoAnchorCollapsedHover .logo img,
-.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible) .logo img {
+.logoColumnCollapsed:has(.logoAnchorCollapsedHover) .logo img,
+.logoColumnCollapsed:has(.collapsedOpenHitArea:focus-visible) .logo img {
   opacity: 0;
 }
 
@@ -94,22 +112,16 @@
 }
 
 .logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon,
-.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+.logoColumnCollapsed:has(.collapsedOpenHitArea:focus-visible)
   .collapsedSidebarCtrlIcon {
   opacity: 1;
 }
 
 .logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon svg,
-.logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+.logoColumnCollapsed:has(.collapsedOpenHitArea:focus-visible)
   .collapsedSidebarCtrlIcon
   svg {
   transform: rotate(180deg) scale(1.06);
-}
-
-.sidebarCollapsed .collapsedLogoTooltipWrap {
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
 }
 
 .collapsedOpenHitArea {
@@ -879,14 +891,14 @@
     transition: none;
   }
 
-  .logoAnchorCollapsed .logo img,
+  .logoColumnCollapsed .logo img,
   .collapsedSidebarCtrlIcon,
   .collapsedSidebarCtrlIcon svg {
     transition: none;
   }
 
   .logoAnchorCollapsed.logoAnchorCollapsedHover .collapsedSidebarCtrlIcon svg,
-  .logoAnchorCollapsed:has(.collapsedOpenHitArea:focus-visible)
+  .logoColumnCollapsed:has(.collapsedOpenHitArea:focus-visible)
     .collapsedSidebarCtrlIcon
     svg {
     transform: rotate(180deg);

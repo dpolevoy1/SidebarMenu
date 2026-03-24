@@ -572,68 +572,76 @@ export function SidebarMenu({
     >
       <header className={styles.header}>
         <div className={styles.logoRow}>
-          {sidebarCollapsed ? (
-            <Tooltip
-              label="Open sidebar"
-              shortcut="⌘."
-              wrapperClassName={styles.collapsedLogoTooltipWrap}
-            >
-              <div
-                ref={collapsedLogoAnchorRef}
-                className={`${styles.logoAnchor} ${styles.logoAnchorCollapsed} ${
-                  collapsedLogoHover ? styles.logoAnchorCollapsedHover : ""
-                }`.trim()}
-                onMouseEnter={onCollapsedLogoMouseEnter}
-                onMouseLeave={onCollapsedLogoMouseLeave}
+          <div
+            className={`${styles.logoColumn} ${
+              sidebarCollapsed ? styles.logoColumnCollapsed : ""
+            }`.trim()}
+          >
+            <div className={styles.logo}>
+              <img
+                src={logoSrc}
+                alt=""
+                width={40}
+                height={40}
+                decoding="async"
+              />
+            </div>
+            {sidebarCollapsed ? (
+              <Tooltip
+                label="Open sidebar"
+                shortcut="⌘."
+                wrapperClassName={styles.collapsedLogoTooltipWrap}
               >
-                <div className={styles.logo}>
-                  <img src={logoSrc} alt="" width={40} height={40} />
+                <div
+                  ref={collapsedLogoAnchorRef}
+                  className={`${styles.logoAnchorCollapsed} ${
+                    collapsedLogoHover ? styles.logoAnchorCollapsedHover : ""
+                  }`.trim()}
+                  onMouseEnter={onCollapsedLogoMouseEnter}
+                  onMouseLeave={onCollapsedLogoMouseLeave}
+                >
+                  <span
+                    className={styles.collapsedSidebarCtrlIcon}
+                    aria-hidden
+                  >
+                    <HugeiconsIcon
+                      icon={PanelLeftIcon}
+                      size={20}
+                      strokeWidth={1.75}
+                      color="currentColor"
+                      aria-hidden
+                    />
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.collapsedOpenHitArea}
+                    onClick={() => onToggleCollapse?.()}
+                    aria-label="Open sidebar"
+                    aria-keyshortcuts="Meta+Period"
+                  />
                 </div>
-                <span
-                  className={styles.collapsedSidebarCtrlIcon}
-                  aria-hidden
-                >
-                  <HugeiconsIcon
-                    icon={PanelLeftIcon}
-                    size={20}
-                    strokeWidth={1.75}
-                    color="currentColor"
-                    aria-hidden
-                  />
-                </span>
-                <button
-                  type="button"
-                  className={styles.collapsedOpenHitArea}
-                  onClick={() => onToggleCollapse?.()}
-                  aria-label="Open sidebar"
-                  aria-keyshortcuts="Meta+Period"
-                />
-              </div>
-            </Tooltip>
-          ) : (
-            <>
-              <div className={styles.logo}>
-                <img src={logoSrc} alt="" width={40} height={40} />
-              </div>
-              <Tooltip label={collapseActionLabel} shortcut="⌘.">
-                <button
-                  type="button"
-                  className={styles.collapseBtn}
-                  onClick={() => onToggleCollapse?.()}
-                  aria-label={collapseActionLabel}
-                  aria-keyshortcuts="Meta+Period"
-                >
-                  <HugeiconsIcon
-                    icon={PanelLeftIcon}
-                    size={20}
-                    strokeWidth={1.75}
-                    color="currentColor"
-                    aria-hidden
-                  />
-                </button>
               </Tooltip>
-            </>
-          )}
+            ) : null}
+          </div>
+          {!sidebarCollapsed ? (
+            <Tooltip label={collapseActionLabel} shortcut="⌘.">
+              <button
+                type="button"
+                className={styles.collapseBtn}
+                onClick={() => onToggleCollapse?.()}
+                aria-label={collapseActionLabel}
+                aria-keyshortcuts="Meta+Period"
+              >
+                <HugeiconsIcon
+                  icon={PanelLeftIcon}
+                  size={20}
+                  strokeWidth={1.75}
+                  color="currentColor"
+                  aria-hidden
+                />
+              </button>
+            </Tooltip>
+          ) : null}
         </div>
         {!sidebarCollapsed ? (
           <div className={styles.headline}>
