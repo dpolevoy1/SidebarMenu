@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   BookBookmark02Icon,
@@ -462,6 +462,21 @@ export function SidebarMenu({
     );
   };
 
+  /** Collapsed rail: empty menu padding / gap / below icons opens sidebar (same as logo control). */
+  const handleCollapsedMenuClick = (e: MouseEvent<HTMLElement>) => {
+    if (!sidebarCollapsed) return;
+    const raw = e.target;
+    const el =
+      raw instanceof Element
+        ? raw
+        : raw instanceof Text && raw.parentElement
+          ? raw.parentElement
+          : null;
+    if (!el) return;
+    if (el.closest("button, a[href], input, textarea, select")) return;
+    onToggleCollapse?.();
+  };
+
   type NavButtonOptions = {
     /** Shortcut text on the right; fades in on row hover/focus (not a floating tooltip). */
     hoverShortcut?: string;
@@ -599,7 +614,10 @@ export function SidebarMenu({
         ) : null}
       </header>
 
-      <nav className={styles.menu}>
+      <nav
+        className={styles.menu}
+        onClick={sidebarCollapsed ? handleCollapsedMenuClick : undefined}
+      >
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Actions</p>
           {navButton(
@@ -887,6 +905,9 @@ export function SidebarMenu({
               })
             : null}
         </div>
+        {sidebarCollapsed ? (
+          <div className={styles.menuCollapsedSpacer} aria-hidden />
+        ) : null}
       </nav>
     </aside>
   );

@@ -1,4 +1,7 @@
 .sidebar {
+  --sidebar-rail-duration: 0.42s;
+  --sidebar-rail-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -11,9 +14,9 @@
   max-width: 300px;
   flex-shrink: 0;
   transition:
-    width 0.22s ease,
-    min-width 0.22s ease,
-    max-width 0.22s ease;
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    min-width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    max-width var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 /* Figma 8300-9042 — Sidebar / Collapsed: 68px rail, icon-only, logo header */
@@ -23,14 +26,20 @@
   max-width: 68px;
 }
 
+/*
+ * Collapsed rail: one stable layout for the whole width animation (no @container breakpoint).
+ * A second “narrow” layout used to flip at ~88px and re-center rows — that caused a visible
+ * horizontal jump in the icons. Left-aligned padding matches the final 68px geometry: 12px menu
+ * + 12px row padding = 24px to the icon; logo uses 14px header padding so a 40px mark centers in 68px.
+ */
 .sidebarCollapsed .header {
   padding: 24px 14px;
   gap: 0;
-  align-items: center;
+  align-items: stretch;
 }
 
 .sidebarCollapsed .logoRow {
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
 }
 
@@ -88,9 +97,9 @@
   transform: rotate(180deg) scale(1.06);
 }
 
-.collapsedLogoTooltipWrap {
+.sidebarCollapsed .collapsedLogoTooltipWrap {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
 }
 
@@ -113,15 +122,22 @@
   outline-offset: 2px;
 }
 
-.collapsedNavTooltipWrap {
+.sidebarCollapsed .collapsedNavTooltipWrap {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   max-width: 300px;
 }
 
 .sidebarCollapsed .menu {
   padding: 0 12px 24px;
+  cursor: pointer;
+}
+
+.menuCollapsedSpacer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .sidebarCollapsed .sectionLabel {
@@ -135,13 +151,12 @@
 }
 
 .sidebarCollapsed .navRow {
-  justify-content: center;
+  justify-content: flex-start;
   box-sizing: border-box;
-  width: 44px;
-  max-width: 44px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 9px 12px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 8px 12px;
   gap: 0;
   cursor: pointer;
 }
@@ -162,6 +177,7 @@
   padding: 24px;
   flex-shrink: 0;
   overflow: visible;
+  transition: padding var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .logoRow {
@@ -286,6 +302,7 @@
   overflow: auto;
   padding: 0 12px 24px;
   width: 100%;
+  transition: padding var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .section {
@@ -845,6 +862,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar {
+    transition: none;
+  }
+
+  .header,
+  .menu {
     transition: none;
   }
 
