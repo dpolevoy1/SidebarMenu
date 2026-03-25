@@ -50,6 +50,7 @@ export default function App() {
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
         activeNavId={activeNavId}
         onNavClick={(id) => {
+          setSelectedChat(null);
           setActiveNavId(id);
           if (id === "chief-of-staff") {
             setSelectedChiefOfStaffItem(DEFAULT_CHIEF_OF_STAFF_ITEMS[0]!);
@@ -74,25 +75,34 @@ export default function App() {
         }}
         selectedChiefOfStaffItem={selectedChiefOfStaffItem}
         onChiefOfStaffItemClick={(title) => {
+          setSelectedChat(null);
           setSelectedChiefOfStaffItem(title);
         }}
         selectedKnowledgeItem={selectedKnowledgeItem}
         onKnowledgeItemClick={(title) => {
+          setSelectedChat(null);
           setSelectedKnowledgeItem(title);
         }}
         selectedControlsItem={selectedControlsItem}
         onControlsItemClick={(title) => {
+          setSelectedChat(null);
           setSelectedControlsItem(title);
         }}
         selectedWisdomItem={selectedWisdomItem}
         onWisdomItemClick={(title) => {
+          setSelectedChat(null);
           setSelectedWisdomItem(title);
         }}
         starredChats={starredChats}
         selectedChat={selectedChat}
-        onChatClick={(_title, section, index) =>
-          setSelectedChat({ section, index })
-        }
+        onChatClick={(_title, section, index) => {
+          setSelectedChat({ section, index });
+          setSelectedChiefOfStaffItem(null);
+          setSelectedKnowledgeItem(null);
+          setSelectedControlsItem(null);
+          setSelectedWisdomItem(null);
+          setActiveNavId("post-meeting-insights");
+        }}
         onRemoveStarredChat={(_title, index) => {
           setStarredChats((prev) => prev.filter((_, i) => i !== index));
           setSelectedChat((prev) => {

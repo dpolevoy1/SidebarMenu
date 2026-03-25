@@ -513,6 +513,11 @@ export function SidebarMenu({
   const newQuestionShortcutBadge =
     newQuestionShortcut === null ? undefined : (newQuestionShortcut ?? "⇧⌘O");
 
+  /** One primary selection in the menu; when a Starred/Recents chat is selected, nav + sub-nav must not show active styling. */
+  const menuSelectionSuppressedByChat = selectedChat != null;
+  const navRowIsActive = (id: SidebarNavId) =>
+    !menuSelectionSuppressedByChat && activeNavId === id;
+
   const collapseActionLabel = sidebarCollapsed ? "Open sidebar" : "Collapse sidebar";
 
   const onCollapsedLogoMouseEnter = () => {
@@ -563,7 +568,7 @@ export function SidebarMenu({
     options: NavButtonOptions = {},
   ) => {
     const { hoverShortcut, hoverChevron } = options;
-    const active = activeNavId === id;
+    const active = navRowIsActive(id);
 
     const row = (
       <button
@@ -718,7 +723,7 @@ export function SidebarMenu({
             <button
               type="button"
               className={`${styles.navRow} ${
-                activeNavId === "chief-of-staff" ? styles.navRowActive : ""
+                navRowIsActive("chief-of-staff") ? styles.navRowActive : ""
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 chiefOfStaffListOpen ? styles.navRowSubNavExpanded : ""
               }`}
@@ -742,7 +747,9 @@ export function SidebarMenu({
             expanded={
               activeNavId === "chief-of-staff" && chiefOfStaffListOpen
             }
-            selectedTitle={selectedChiefOfStaffItem}
+            selectedTitle={
+              menuSelectionSuppressedByChat ? null : selectedChiefOfStaffItem
+            }
             onItemClick={onChiefOfStaffItemClick}
             keyPrefix="cos"
           />
@@ -761,7 +768,7 @@ export function SidebarMenu({
             <button
               type="button"
               className={`${styles.navRow} ${
-                activeNavId === "knowledge" ? styles.navRowActive : ""
+                navRowIsActive("knowledge") ? styles.navRowActive : ""
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 knowledgeListOpen ? styles.navRowSubNavExpanded : ""
               }`}
@@ -781,7 +788,9 @@ export function SidebarMenu({
             items={knowledgeItems}
             ariaLabel="Knowledge"
             expanded={activeNavId === "knowledge" && knowledgeListOpen}
-            selectedTitle={selectedKnowledgeItem}
+            selectedTitle={
+              menuSelectionSuppressedByChat ? null : selectedKnowledgeItem
+            }
             onItemClick={onKnowledgeItemClick}
             keyPrefix="know"
           />
@@ -790,7 +799,7 @@ export function SidebarMenu({
             <button
               type="button"
               className={`${styles.navRow} ${
-                activeNavId === "controls" ? styles.navRowActive : ""
+                navRowIsActive("controls") ? styles.navRowActive : ""
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 controlsListOpen ? styles.navRowSubNavExpanded : ""
               }`}
@@ -810,7 +819,9 @@ export function SidebarMenu({
             items={controlsItems}
             ariaLabel="Controls"
             expanded={activeNavId === "controls" && controlsListOpen}
-            selectedTitle={selectedControlsItem}
+            selectedTitle={
+              menuSelectionSuppressedByChat ? null : selectedControlsItem
+            }
             onItemClick={onControlsItemClick}
             keyPrefix="ctrl"
           />
@@ -819,7 +830,7 @@ export function SidebarMenu({
             <button
               type="button"
               className={`${styles.navRow} ${
-                activeNavId === "wisdom" ? styles.navRowActive : ""
+                navRowIsActive("wisdom") ? styles.navRowActive : ""
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 wisdomListOpen ? styles.navRowSubNavExpanded : ""
               }`}
@@ -839,7 +850,9 @@ export function SidebarMenu({
             items={wisdomItems}
             ariaLabel="Wisdom"
             expanded={activeNavId === "wisdom" && wisdomListOpen}
-            selectedTitle={selectedWisdomItem}
+            selectedTitle={
+              menuSelectionSuppressedByChat ? null : selectedWisdomItem
+            }
             onItemClick={onWisdomItemClick}
             keyPrefix="wis"
           />
