@@ -496,11 +496,11 @@
   transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-/* Lottie Knowledge icon (ic_knowledge.json, 20×20 comp) */
 .knowledgeLottie {
   width: 20px;
   height: 20px;
   line-height: 0;
+  pointer-events: none;
 }
 
 /* Let clicks hit the <button>, not the SVG hit-area */
