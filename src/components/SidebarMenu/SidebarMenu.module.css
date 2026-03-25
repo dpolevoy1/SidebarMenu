@@ -691,11 +691,13 @@
   width: 100%;
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.58s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height var(--sub-nav-duration, 0.58s)
+    cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebarSubNavListExpanded {
-  max-height: 520px;
+  /* Exact content height from ExpandableSubNavList keeps open “speed” consistent across list lengths */
+  max-height: var(--sub-nav-max, 520px);
 }
 
 /*
@@ -707,15 +709,17 @@
   opacity: 0;
   transform: translateY(-6px);
   transition:
-    opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: calc((var(--n, 1) - 1 - var(--stagger, 0)) * 0.034s);
+    opacity var(--sub-nav-duration, 0.52s) cubic-bezier(0.4, 0, 0.2, 1),
+    transform var(--sub-nav-duration, 0.52s) cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: calc(
+    (var(--n, 1) - 1 - var(--stagger, 0)) * var(--stagger-step, 34ms)
+  );
 }
 
 .sidebarSubNavListExpanded .sidebarSubNavRowFade {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: calc(var(--stagger, 0) * 0.034s);
+  transition-delay: calc(var(--stagger, 0) * var(--stagger-step, 34ms));
 }
 
 /* Indented row: .chatRow + this; same typography as Starred/Recents; 44px left = align with parent label */

@@ -22,7 +22,8 @@ const DEFAULT_LOGO =
  * Wait for the outgoing sub-list to finish closing (`.sidebarSubNavList` max-height + row fade)
  * before changing `activeNavId` and opening the next list — avoids simultaneous collapse/expand.
  */
-const SUB_NAV_CLOSE_DELAY_MS = 620;
+/** Must exceed worst-case sub-list close (max-height + row fade + stagger); see ExpandableSubNavList duration math. */
+const SUB_NAV_CLOSE_DELAY_MS = 1100;
 
 /** Ignore “hover” on the collapsed logo briefly after toggling so :hover doesn’t apply immediately. */
 const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
@@ -192,6 +193,33 @@ function NewQuestionIcon() {
   );
 }
 
+/** Matches `.chatRow` sub-nav row height in `SidebarMenu.module.css`. */
+const SUB_NAV_ROW_HEIGHT_PX = 38;
+/** Target expansion speed (px/s); duration = content height / this, clamped. */
+const SUB_NAV_PX_PER_SEC = 420;
+const SUB_NAV_DURATION_MIN_MS = 340;
+const SUB_NAV_DURATION_MAX_MS = 680;
+
+function subNavOpenDurationMs(itemCount: number): number {
+  if (itemCount <= 0) return SUB_NAV_DURATION_MIN_MS;
+  const contentPx = itemCount * SUB_NAV_ROW_HEIGHT_PX;
+  const ms = (contentPx / SUB_NAV_PX_PER_SEC) * 1000;
+  return Math.round(
+    Math.min(
+      SUB_NAV_DURATION_MAX_MS,
+      Math.max(SUB_NAV_DURATION_MIN_MS, ms),
+    ),
+  );
+}
+
+function subNavStaggerStepMs(itemCount: number, durationMs: number): number {
+  if (itemCount <= 1) return 0;
+  return Math.min(
+    34,
+    Math.max(10, Math.floor(durationMs / (2 * (itemCount - 1)))),
+  );
+}
+
 type ExpandableSubNavListProps = {
   items: string[];
   ariaLabel: string;
@@ -209,12 +237,23 @@ function ExpandableSubNavList({
   onItemClick,
   keyPrefix,
 }: ExpandableSubNavListProps) {
+  const openDurationMs = subNavOpenDurationMs(items.length);
+  const staggerStepMs = subNavStaggerStepMs(items.length, openDurationMs);
+  const contentHeightPx = items.length * SUB_NAV_ROW_HEIGHT_PX;
+
   return (
     <div
       className={`${styles.sidebarSubNavList} ${
         expanded ? styles.sidebarSubNavListExpanded : ""
       }`}
-      style={{ "--n": items.length } as React.CSSProperties}
+      style={
+        {
+          "--n": items.length,
+          "--sub-nav-max": `${contentHeightPx}px`,
+          "--sub-nav-duration": `${openDurationMs}ms`,
+          "--stagger-step": `${staggerStepMs}ms`,
+        } as React.CSSProperties
+      }
       role="group"
       aria-label={ariaLabel}
       aria-hidden={!expanded}
