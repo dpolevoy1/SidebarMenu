@@ -841,13 +841,16 @@
 }
 
 .chatStarBtn {
+  --chat-star-hit: 20px;
+  --chat-star-icon: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 20px;
-  height: 20px;
-  padding: 2px;
+  width: var(--chat-star-hit);
+  height: var(--chat-star-hit);
+  /* 12px glyph centered in 20×20: 4px inset per side (8px total per axis). */
+  padding: calc((var(--chat-star-hit) - var(--chat-star-icon)) / 2);
   margin: 0;
   border: none;
   border-radius: 6px;
@@ -878,8 +881,8 @@
 
 .chatStarBtn svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: var(--chat-star-icon);
+  height: var(--chat-star-icon);
   flex-shrink: 0;
   pointer-events: none;
 }
