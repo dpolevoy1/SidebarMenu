@@ -62,8 +62,8 @@ export interface SidebarMenuProps {
   userName: string;
   logoSrc?: string;
   activeNavId?: SidebarNavId;
-  /** Highlights a Starred / Recents row with the selected style when set. */
-  selectedChat?: { section: "starred" | "recents"; title: string } | null;
+  /** Highlights a Starred / Recents row with the selected style when set (index matches list position). */
+  selectedChat?: { section: "starred" | "recents"; index: number } | null;
   /**
    * Shortcut shown on the right of "New question" on hover/focus (inline in the row).
    * Defaults to "⇧⌘O". Pass `null` to hide it and omit `aria-keyshortcuts` on that control.
@@ -75,7 +75,11 @@ export interface SidebarMenuProps {
   sidebarCollapsed?: boolean;
   starredChats?: string[];
   recentChats?: string[];
-  onChatClick?: (title: string, section: "starred" | "recents") => void;
+  onChatClick?: (
+    title: string,
+    section: "starred" | "recents",
+    index: number,
+  ) => void;
   /** Remove a chat from Starred (star control). */
   onRemoveStarredChat?: (title: string, index: number) => void;
   /**
@@ -861,7 +865,7 @@ export function SidebarMenu({
                   key={`starred-${index}-${title}`}
                   className={`${styles.chatRow} ${styles.chatRowStarred} ${
                     selectedChat?.section === "starred" &&
-                    selectedChat.title === title
+                    selectedChat.index === index
                       ? styles.chatRowSelected
                       : ""
                   } ${
@@ -875,7 +879,13 @@ export function SidebarMenu({
                   <button
                     type="button"
                     className={styles.chatRowMain}
-                    onClick={() => onChatClick?.(title, "starred")}
+                    aria-current={
+                      selectedChat?.section === "starred" &&
+                      selectedChat.index === index
+                        ? "true"
+                        : undefined
+                    }
+                    onClick={() => onChatClick?.(title, "starred", index)}
                   >
                     <span className={styles.chatLabel}>{title}</span>
                   </button>
@@ -930,7 +940,7 @@ export function SidebarMenu({
                     key={`recent-${index}-${title}`}
                     className={`${styles.chatRow} ${styles.chatRowRecent} ${
                       selectedChat?.section === "recents" &&
-                      selectedChat.title === title
+                      selectedChat.index === index
                         ? styles.chatRowSelected
                         : ""
                     } ${
@@ -944,7 +954,13 @@ export function SidebarMenu({
                     <button
                       type="button"
                       className={styles.chatRowMain}
-                      onClick={() => onChatClick?.(title, "recents")}
+                      aria-current={
+                        selectedChat?.section === "recents" &&
+                        selectedChat.index === index
+                          ? "true"
+                          : undefined
+                      }
+                      onClick={() => onChatClick?.(title, "recents", index)}
                     >
                       <span className={styles.chatLabel}>{title}</span>
                     </button>

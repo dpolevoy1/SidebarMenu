@@ -36,6 +36,10 @@ export default function App() {
   const [selectedWisdomItem, setSelectedWisdomItem] = useState<string | null>(
     null,
   );
+  const [selectedChat, setSelectedChat] = useState<{
+    section: "starred" | "recents";
+    index: number;
+  } | null>(null);
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
@@ -85,8 +89,19 @@ export default function App() {
           setSelectedWisdomItem(title);
         }}
         starredChats={starredChats}
+        selectedChat={selectedChat}
+        onChatClick={(_title, section, index) =>
+          setSelectedChat({ section, index })
+        }
         onRemoveStarredChat={(_title, index) => {
           setStarredChats((prev) => prev.filter((_, i) => i !== index));
+          setSelectedChat((prev) => {
+            if (!prev || prev.section !== "starred") return prev;
+            if (prev.index === index) return null;
+            if (prev.index > index)
+              return { section: "starred", index: prev.index - 1 };
+            return prev;
+          });
         }}
         onToggleRecentStar={(title) => {
           setStarredChats((prev) =>
