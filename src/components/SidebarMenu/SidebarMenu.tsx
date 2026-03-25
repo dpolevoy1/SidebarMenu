@@ -28,6 +28,9 @@ const SUB_NAV_CLOSE_BUFFER_MS = 48;
 /** Ignore “hover” on the collapsed logo briefly after toggling so :hover doesn’t apply immediately. */
 const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
 
+/** Starred / Recents row control — icon glyph 16×16 (see `.chatStarBtn svg` in CSS). */
+const CHAT_STAR_ICON_PX = 16;
+
 /** Default sub-nav labels — keep in sync with `SidebarMenu` prop defaults; App uses `[0]` as initial selection. */
 export const DEFAULT_CHIEF_OF_STAFF_ITEMS = [
   "Briefing",
@@ -951,7 +954,7 @@ export function SidebarMenu({
                     >
                       <HugeiconsIcon
                         icon={StarIcon}
-                        size={16}
+                        size={CHAT_STAR_ICON_PX}
                         strokeWidth={1.5}
                         color="currentColor"
                         aria-hidden
@@ -1035,7 +1038,7 @@ export function SidebarMenu({
                       >
                         <HugeiconsIcon
                           icon={StarIcon}
-                          size={16}
+                          size={CHAT_STAR_ICON_PX}
                           strokeWidth={1.5}
                           color="currentColor"
                           aria-hidden
