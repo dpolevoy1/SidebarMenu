@@ -105,29 +105,24 @@ export function Tooltip({
 
     let pendingFocusRaf = 0;
 
-    const applyFocusVisiblePosition = () => {
+    /** Anchor to focused control on any modality. (Mouse-leave still drops the panel unless :focus-visible—avoids stuck tooltips after pointer clicks.) */
+    const applyFocusPosition = () => {
       if (!wrap.isConnected) return;
       const active = document.activeElement;
-      if (
-        !(active instanceof HTMLElement) ||
-        !wrap.contains(active) ||
-        !active.matches(":focus-visible")
-      ) {
-        return;
-      }
+      if (!(active instanceof HTMLElement) || !wrap.contains(active)) return;
       setPos(positionFromElement(active));
     };
 
     const onFocusIn = (e: FocusEvent) => {
       const t = e.target;
       if (!(t instanceof HTMLElement) || !wrap.contains(t)) return;
-      applyFocusVisiblePosition();
+      applyFocusPosition();
       if (pendingFocusRaf !== 0) {
         cancelAnimationFrame(pendingFocusRaf);
       }
       pendingFocusRaf = requestAnimationFrame(() => {
         pendingFocusRaf = 0;
-        applyFocusVisiblePosition();
+        applyFocusPosition();
       });
     };
 
