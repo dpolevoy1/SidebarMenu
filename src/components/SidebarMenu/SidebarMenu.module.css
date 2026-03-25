@@ -842,14 +842,14 @@
 
 .chatStarBtn {
   --chat-star-hit: 20px;
-  --chat-star-icon: 12px;
+  --chat-star-icon: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   width: var(--chat-star-hit);
   height: var(--chat-star-hit);
-  /* 12px glyph centered in 20×20: 4px inset per side (8px total per axis). */
+  /* 14px glyph centered in 20×20: 3px inset per side. */
   padding: calc((var(--chat-star-hit) - var(--chat-star-icon)) / 2);
   margin: 0;
   border: none;
