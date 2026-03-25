@@ -787,14 +787,14 @@
 
 .chatRowStarred:hover .chatRowMain,
 .chatRowStarred:focus-within .chatRowMain {
-  /* Reserve space for star + gap so title ellipses; star itself does not resize in layout */
-  padding-right: 36px;
+  /* Reserve space for 20×20 star control + gap so title ellipses */
+  padding-right: 32px;
 }
 
 /* Recents: reserve title space only on row hover or when the star is keyboard-focused (not :focus-within, so click focus does not keep the star visible) */
 .chatRowRecent:hover .chatRowMain,
 .chatRowRecent:has(.chatStarBtn:focus-visible) .chatRowMain {
-  padding-right: 36px;
+  padding-right: 32px;
 }
 
 /* Anchor for star control + optional exit-hint label (to the left of the icon) */
@@ -845,9 +845,9 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 24px;
-  height: 24px;
-  padding: 4px;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
   margin: 0;
   border: none;
   border-radius: 6px;
