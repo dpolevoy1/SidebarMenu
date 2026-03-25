@@ -19,11 +19,11 @@ const DEFAULT_LOGO =
   "https://www.figma.com/api/mcp/asset/6495e079-37c2-4aab-bb93-875b65fe45c8";
 
 /**
- * Wait for the outgoing sub-list to finish closing (`.sidebarSubNavList` max-height + row fade)
- * before changing `activeNavId` and opening the next list — avoids simultaneous collapse/expand.
+ * After closing an expandable sub-list, we wait until its max-height + staggered row fade
+ * finish before firing `onNavClick` / opening the next list. Delay is derived from that list’s
+ * item count — a fixed ~1s wait was excessive for the default 2–4 row lists.
  */
-/** Must exceed worst-case sub-list close (max-height + row fade + stagger); see ExpandableSubNavList duration math. */
-const SUB_NAV_CLOSE_DELAY_MS = 1100;
+const SUB_NAV_CLOSE_BUFFER_MS = 48;
 
 /** Ignore “hover” on the collapsed logo briefly after toggling so :hover doesn’t apply immediately. */
 const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
@@ -224,6 +224,17 @@ function subNavStaggerStepMs(itemCount: number, durationMs: number): number {
   );
 }
 
+/** Matches close timing: panel max-height runs alongside row opacity; slowest row = (n-1)*stagger + duration. */
+function subNavCloseDelayMs(itemCount: number): number {
+  if (itemCount <= 0)
+    return SUB_NAV_DURATION_MIN_MS + SUB_NAV_CLOSE_BUFFER_MS;
+  const durationMs = subNavOpenDurationMs(itemCount);
+  const staggerStepMs = subNavStaggerStepMs(itemCount, durationMs);
+  const staggerTailMs =
+    itemCount > 1 ? (itemCount - 1) * staggerStepMs : 0;
+  return durationMs + staggerTailMs + SUB_NAV_CLOSE_BUFFER_MS;
+}
+
 type ExpandableSubNavListProps = {
   items: string[];
   ariaLabel: string;
@@ -384,6 +395,21 @@ export function SidebarMenu({
     }
   };
 
+  const expandableItemCountForNav = (id: SidebarNavId): number => {
+    switch (id) {
+      case "chief-of-staff":
+        return chiefOfStaffItems.length;
+      case "knowledge":
+        return knowledgeItems.length;
+      case "controls":
+        return controlsItems.length;
+      case "wisdom":
+        return wisdomItems.length;
+      default:
+        return 1;
+    }
+  };
+
   const openExpandableSubListForId = (id: SidebarNavId) => {
     if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
     else if (id === "knowledge") setKnowledgeListOpen(true);
@@ -401,10 +427,13 @@ export function SidebarMenu({
     clearPendingNavTimeout();
     if (activeExpandableSubListIsOpen()) {
       closeActiveExpandableSubList();
+      const waitMs = subNavCloseDelayMs(
+        expandableItemCountForNav(activeNavId),
+      );
       pendingNavTimeoutRef.current = setTimeout(() => {
         pendingNavTimeoutRef.current = null;
         onNavClick?.(id);
-      }, SUB_NAV_CLOSE_DELAY_MS);
+      }, waitMs);
     } else {
       onNavClick?.(id);
     }
@@ -432,10 +461,13 @@ export function SidebarMenu({
 
     if (activeExpandableSubListIsOpen()) {
       closeActiveExpandableSubList();
+      const waitMs = subNavCloseDelayMs(
+        expandableItemCountForNav(activeNavId),
+      );
       pendingNavTimeoutRef.current = setTimeout(() => {
         pendingNavTimeoutRef.current = null;
         completeExpandableNavigation(id);
-      }, SUB_NAV_CLOSE_DELAY_MS);
+      }, waitMs);
     } else {
       completeExpandableNavigation(id);
     }
