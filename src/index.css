@@ -16,5 +16,30 @@ body,
 body {
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: var(--color-neutral-white);
+  background: var(--color-primary-200);
+}
+
+/* Custom scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(62, 74, 94, 0.15) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(62, 74, 94, 0.15);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(62, 74, 94, 0.3);
 }
