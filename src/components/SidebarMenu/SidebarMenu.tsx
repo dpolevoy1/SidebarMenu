@@ -353,6 +353,8 @@ export function SidebarMenu({
     null,
   );
   const collapsedLogoAnchorRef = useRef<HTMLDivElement>(null);
+  const menuScrollRef = useRef<HTMLElement>(null);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
   const collapsedLogoHoverSuppressedUntilRef = useRef(0);
   /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
   const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
@@ -363,6 +365,20 @@ export function SidebarMenu({
       pendingNavTimeoutRef.current = null;
     }
   };
+
+  useEffect(() => {
+    const el = menuScrollRef.current;
+    if (!el) return;
+    const sync = () => setHeaderScrolled(el.scrollTop > 0);
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", sync);
+      ro.disconnect();
+    };
+  }, [sidebarCollapsed]);
 
   const activeExpandableSubListIsOpen = (): boolean => {
     switch (activeNavId) {
@@ -653,7 +669,11 @@ export function SidebarMenu({
       }`}
       aria-label="Main navigation"
     >
-      <header className={styles.header}>
+      <header
+        className={`${styles.header} ${
+          headerScrolled ? styles.headerScrolled : ""
+        }`.trim()}
+      >
         <div className={styles.logoRow}>
           <div
             className={`${styles.logoColumn} ${
@@ -740,6 +760,7 @@ export function SidebarMenu({
       </header>
 
       <nav
+        ref={menuScrollRef}
         className={styles.menu}
         onClick={sidebarCollapsed ? handleCollapsedMenuClick : undefined}
       >

@@ -201,7 +201,17 @@
   padding: 24px;
   flex-shrink: 0;
   overflow: visible;
-  transition: padding var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+  transition:
+    padding var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Figma 8294-30029 — divider + solid header surface once the menu starts scrolling */
+.headerScrolled {
+  border-bottom: 1px solid
+    var(--Neutral-400---List-outline, var(--color-neutral-400-list-outline));
+  background: var(--Primary-200, var(--color-primary-200));
 }
 
 .logoRow {
