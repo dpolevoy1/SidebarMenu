@@ -490,6 +490,48 @@
   transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
+/* Knowledge: Lottie in the same 20×20 slot; rules are scoped under `.knowledgeNavIcon` only */
+.knowledgeNavIcon .knowledgeNavLottieHost {
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.knowledgeNavIcon .knowledgeNavLottieHost svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block;
+}
+
+/*
+ * Selected state: match label color on shape strokes only. A broad `svg path { stroke }` rule
+ * also hit track-matte / mask paths and broke the silhouette.
+ * lottie-web marks real `ty: st` / `ty: gs` paths with round caps and `fill-opacity="0"`.
+ */
+.knowledgeNavIcon
+  .knowledgeNavLottieHost
+  svg
+  path[stroke-linecap="round"][fill-opacity="0"] {
+  transition: stroke var(--nav-state-duration) var(--nav-state-ease);
+}
+
+.navRowActive
+  .knowledgeNavIcon
+  .knowledgeNavLottieHost
+  svg
+  path[stroke-linecap="round"][fill-opacity="0"] {
+  stroke: currentColor !important;
+}
+
+/* Hover/click hit the row `<button>` (same pattern as `.navIcon svg`) */
+.knowledgeNavIcon .knowledgeNavLottieHost,
+.knowledgeNavIcon .knowledgeNavLottieHost * {
+  pointer-events: none;
+}
+
 /* Let clicks hit the <button>, not the SVG hit-area */
 .navIcon svg,
 .newQuestionIcon svg,
@@ -503,7 +545,8 @@
   transition: transform var(--nav-state-duration) var(--nav-state-ease);
 }
 
-.navRow:hover .navIcon {
+/* Knowledge uses Lottie — keep it pixel-stable on hover (no scale) */
+.navRow:hover .navIcon:not(.knowledgeNavIcon) {
   transform: scale(1.06);
 }
 

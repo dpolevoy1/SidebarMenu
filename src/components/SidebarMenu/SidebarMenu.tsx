@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FocusEvent, MouseEvent, ReactNode } from "react";
+import Lottie, {
+  type LottieRef,
+  type LottieRefCurrentProps,
+} from "lottie-react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   BookBookmark02Icon,
@@ -158,6 +162,98 @@ function NavIcon({
         color="currentColor"
         aria-hidden
       />
+    </span>
+  );
+}
+
+/** Knowledge row Lottie: >1 plays faster on hover (rest pose unchanged). */
+const KNOWLEDGE_LOTTIE_PLAYBACK_SPEED = 1.35;
+
+/** Shared fetch for Knowledge Lottie (Bodymovin JSON in `/public/animations/`). */
+let knowledgeLottieJsonPromise: Promise<object> | null = null;
+
+function loadKnowledgeLottieJson(): Promise<object> {
+  if (!knowledgeLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_knowledge.json`;
+    knowledgeLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Knowledge animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return knowledgeLottieJsonPromise;
+}
+
+function knowledgeLottieLastFrame(api: LottieRefCurrentProps): number {
+  /* Prefer `getDuration(true)` — it reads the live lottie instance. `animationItem` /
+   * `animationLoaded` on `lottieRef.current` can be stale because lottie-react only
+   * assigns the ref object once per mount. */
+  const dur = api.getDuration(true);
+  if (dur != null && dur > 0) {
+    return Math.max(0, Math.floor(dur) - 1);
+  }
+  const item = api.animationItem;
+  if (item && item.totalFrames > 0) {
+    return Math.max(0, Math.floor(item.firstFrame + item.totalFrames - 1));
+  }
+  return 0;
+}
+
+function knowledgeLottieGoToRest(api: LottieRefCurrentProps | null | undefined) {
+  if (!api) return;
+  api.goToAndStop(knowledgeLottieLastFrame(api), true);
+}
+
+/**
+ * Knowledge nav row icon — animated Lottie from `public/animations/anima_knowledge.json`.
+ * Hover play/reset is driven by the parent `<button>` via `lottieRef` so the whole row counts as hover.
+ */
+function KnowledgeNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadKnowledgeLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep Book marker fallback below */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.knowledgeNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.knowledgeNavLottieHost}
+          onDOMLoaded={() => {
+            /* Avoid a one-frame flash at t=0 before the renderer settles */
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(KNOWLEDGE_LOTTIE_PLAYBACK_SPEED);
+                knowledgeLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={BookBookmark02Icon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
     </span>
   );
 }
@@ -393,6 +489,7 @@ export function SidebarMenu({
    */
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
 
   const clearPeekLeaveTimer = () => {
     if (peekLeaveTimerRef.current !== null) {
@@ -936,8 +1033,14 @@ export function SidebarMenu({
                 activeNavId === "knowledge" ? knowledgeListOpen : undefined
               }
               onClick={() => handleExpandableNavClick("knowledge")}
+              onMouseEnter={() => {
+                knowledgeLottieRef.current?.goToAndPlay(0, true);
+              }}
+              onMouseLeave={() => {
+                knowledgeLottieGoToRest(knowledgeLottieRef.current);
+              }}
             >
-              <NavIcon icon={BookBookmark02Icon} />
+              <KnowledgeNavIcon lottieRef={knowledgeLottieRef} />
               <span className={styles.navLabel}>Knowledge</span>
               <span className={styles.navChevron} aria-hidden>
                 <NavHoverChevron />
