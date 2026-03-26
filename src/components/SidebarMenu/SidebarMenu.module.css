@@ -190,8 +190,9 @@
   display: none !important;
 }
 
-.sidebarCollapsed .menu > .section:nth-child(3),
-.sidebarCollapsed .menu > .section:nth-child(4) {
+/* Chat list sections — not nth-child so Starred can be omitted when empty */
+.sidebarCollapsed .menu > [data-menu-section="starred"],
+.sidebarCollapsed .menu > [data-menu-section="recents"] {
   display: none;
 }
 

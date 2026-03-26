@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Agentation } from "agentation";
 import {
   SidebarMenu,
@@ -9,12 +9,25 @@ import {
   type SidebarNavId,
 } from "./components/SidebarMenu";
 
-const INITIAL_STARRED_CHATS = [
+/** Full chat list; Starred is only titles from this list that are marked starred. */
+const INITIAL_RECENT_CHATS = [
+  "Assemble Demo generation",
+  "ABI x Unilever",
+  "Assemble Projects Documentation 2026",
+  "AstraZeneca account summary",
+  "Revlon AI workflow transformation",
+  "[beta.2] Unilever S&OP analytics report",
+  "[beta.1] Unilever S&OP analytics report",
   "CRM/Marketing automation spend per MAU",
   "Klaviyo vs Braze MAU comparison",
+  "Daily insights for Dove skincare brand",
+];
+
+/** Subset of titles (unique) from `INITIAL_RECENT_CHATS`; Starred UI follows Recents order. */
+const INITIAL_STARRED_TITLES = [
+  "Assemble Demo generation",
   "CRM/Marketing automation spend per MAU",
   "Daily insights for Dove skincare brand",
-  "Klaviyo vs Braze MAU comparison",
 ];
 
 export default function App() {
@@ -22,8 +35,9 @@ export default function App() {
   const [activeNavId, setActiveNavId] = useState<SidebarNavId>(
     "post-meeting-insights",
   );
+  const [recentChats] = useState<string[]>(INITIAL_RECENT_CHATS);
   const [starredChats, setStarredChats] = useState<string[]>(
-    INITIAL_STARRED_CHATS,
+    INITIAL_STARRED_TITLES,
   );
   const [selectedChiefOfStaffItem, setSelectedChiefOfStaffItem] = useState<
     string | null
@@ -41,6 +55,16 @@ export default function App() {
     section: "starred" | "recents";
     index: number;
   } | null>(null);
+
+  useEffect(() => {
+    const starred = new Set(starredChats);
+    const hasStarredRows = recentChats.some((t) => starred.has(t));
+    if (!hasStarredRows) {
+      setSelectedChat((prev) =>
+        prev?.section === "starred" ? null : prev,
+      );
+    }
+  }, [starredChats, recentChats]);
 
   return (
     <>
@@ -95,6 +119,7 @@ export default function App() {
           setSelectedChat(null);
           setSelectedWisdomItem(title);
         }}
+        recentChats={recentChats}
         starredChats={starredChats}
         selectedChat={selectedChat}
         onChatClick={(_title, section, index) => {
@@ -106,7 +131,7 @@ export default function App() {
           setActiveNavId("post-meeting-insights");
         }}
         onRemoveStarredChat={(_title, index) => {
-          setStarredChats((prev) => prev.filter((_, i) => i !== index));
+          setStarredChats((prev) => prev.filter((t) => t !== _title));
           setSelectedChat((prev) => {
             if (!prev || prev.section !== "starred") return prev;
             if (prev.index === index) return null;

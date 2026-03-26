@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -76,7 +76,12 @@ export interface SidebarMenuProps {
   onToggleCollapse?: () => void;
   /** When true, sidebar is collapsed; collapse button shows "Open sidebar" tooltip. */
   sidebarCollapsed?: boolean;
+  /**
+   * Titles in `recentChats` that are starred (unique). The Starred section lists them in the same
+   * order they appear in `recentChats` (a filtered subset), not a separate ordering.
+   */
   starredChats?: string[];
+  /** Full chat list; Starred is always a filtered subset of these rows. */
   recentChats?: string[];
   onChatClick?: (
     title: string,
@@ -305,11 +310,9 @@ export function SidebarMenu({
   onToggleCollapse,
   sidebarCollapsed = false,
   starredChats = [
-    "CRM/Marketing automation spend per MAU",
-    "Klaviyo vs Braze MAU comparison",
+    "Assemble Demo generation",
     "CRM/Marketing automation spend per MAU",
     "Daily insights for Dove skincare brand",
-    "Klaviyo vs Braze MAU comparison",
   ],
   recentChats = [
     "Assemble Demo generation",
@@ -319,6 +322,9 @@ export function SidebarMenu({
     "Revlon AI workflow transformation",
     "[beta.2] Unilever S&OP analytics report",
     "[beta.1] Unilever S&OP analytics report",
+    "CRM/Marketing automation spend per MAU",
+    "Klaviyo vs Braze MAU comparison",
+    "Daily insights for Dove skincare brand",
   ],
   onChatClick,
   onRemoveStarredChat,
@@ -355,6 +361,13 @@ export function SidebarMenu({
   const collapsedLogoHoverSuppressedUntilRef = useRef(0);
   /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
   const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
+
+  const starredTitleSet = useMemo(() => new Set(starredChats), [starredChats]);
+  /** Starred rows only: same order as in `recentChats`. */
+  const starredChatsOrdered = useMemo(
+    () => recentChats.filter((t) => starredTitleSet.has(t)),
+    [recentChats, starredTitleSet],
+  );
 
   const clearPendingNavTimeout = () => {
     if (pendingNavTimeoutRef.current !== null) {
@@ -888,69 +901,74 @@ export function SidebarMenu({
           />
         </div>
 
-        <div className={styles.section}>
-          <button
-            type="button"
-            className={`${styles.sectionHeadline} ${!starredOpen ? styles.sectionHeadlineCollapsed : ""}`}
-            onClick={() => setStarredOpen((open) => !open)}
-            aria-expanded={starredOpen}
+        {starredChatsOrdered.length > 0 ? (
+          <div
+            className={styles.section}
+            data-menu-section="starred"
           >
-            <span className={styles.sectionHeadlineInner}>
-              <span className={styles.sectionHeadlineLabel}>Starred</span>
-              <span className={styles.sectionHeadChevron} aria-hidden>
-                <NavHoverChevron />
+            <button
+              type="button"
+              className={`${styles.sectionHeadline} ${!starredOpen ? styles.sectionHeadlineCollapsed : ""}`}
+              onClick={() => setStarredOpen((open) => !open)}
+              aria-expanded={starredOpen}
+            >
+              <span className={styles.sectionHeadlineInner}>
+                <span className={styles.sectionHeadlineLabel}>Starred</span>
+                <span className={styles.sectionHeadChevron} aria-hidden>
+                  <NavHoverChevron />
+                </span>
               </span>
-            </span>
-          </button>
-          {starredOpen
-            ? starredChats.map((title, index) => (
-                <div
-                  key={`starred-${index}-${title}`}
-                  className={`${styles.chatRow} ${styles.chatRowStarred} ${
-                    selectedChat?.section === "starred" &&
-                    selectedChat.index === index
-                      ? styles.chatRowSelected
-                      : ""
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className={styles.chatRowMain}
-                    aria-current={
+            </button>
+            {starredOpen
+              ? starredChatsOrdered.map((title, index) => (
+                  <div
+                    key={`starred-${index}-${title}`}
+                    className={`${styles.chatRow} ${styles.chatRowStarred} ${
                       selectedChat?.section === "starred" &&
                       selectedChat.index === index
-                        ? "true"
-                        : undefined
-                    }
-                    onClick={() => onChatClick?.(title, "starred", index)}
+                        ? styles.chatRowSelected
+                        : ""
+                    }`}
                   >
-                    <span className={styles.chatLabel}>{title}</span>
-                  </button>
-                  <span className={styles.chatStarTooltipWrap}>
                     <button
                       type="button"
-                      className={styles.chatStarBtn}
-                      aria-label={`Remove «${title}» from Starred`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemoveStarredChat?.(title, index);
-                      }}
+                      className={styles.chatRowMain}
+                      aria-current={
+                        selectedChat?.section === "starred" &&
+                        selectedChat.index === index
+                          ? "true"
+                          : undefined
+                      }
+                      onClick={() => onChatClick?.(title, "starred", index)}
                     >
-                      <HugeiconsIcon
-                        icon={StarIcon}
-                        size={CHAT_STAR_ICON_PX}
-                        strokeWidth={1.5}
-                        color="currentColor"
-                        aria-hidden
-                      />
+                      <span className={styles.chatLabel}>{title}</span>
                     </button>
-                  </span>
-                </div>
-              ))
-            : null}
-        </div>
+                    <span className={styles.chatStarTooltipWrap}>
+                      <button
+                        type="button"
+                        className={styles.chatStarBtn}
+                        aria-label={`Remove «${title}» from Starred`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveStarredChat?.(title, index);
+                        }}
+                      >
+                        <HugeiconsIcon
+                          icon={StarIcon}
+                          size={CHAT_STAR_ICON_PX}
+                          strokeWidth={1.5}
+                          color="currentColor"
+                          aria-hidden
+                        />
+                      </button>
+                    </span>
+                  </div>
+                ))
+              : null}
+          </div>
+        ) : null}
 
-        <div className={styles.section}>
+        <div className={styles.section} data-menu-section="recents">
           <button
             type="button"
             className={`${styles.sectionHeadline} ${!recentsOpen ? styles.sectionHeadlineCollapsed : ""}`}
@@ -966,7 +984,7 @@ export function SidebarMenu({
           </button>
           {recentsOpen
             ? recentChats.map((title, index) => {
-                const isStarredInList = starredChats.includes(title);
+                const isStarredInList = starredTitleSet.has(title);
                 return (
                   <div
                     key={`recent-${index}-${title}`}
