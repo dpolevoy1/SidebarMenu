@@ -1,4 +1,4 @@
-# A.Team Assemble — Sidebar demo
+# A.Team Assemble — Sidebar menu
 
 Vite + React + TypeScript demo app built around a production-style **sidebar navigation** (`SidebarMenu`): collapsible rail, hover “peek,” Starred/Recents chats, expandable sections, and design-system-aligned tooltips.
 
