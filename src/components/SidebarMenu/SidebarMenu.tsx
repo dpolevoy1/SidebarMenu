@@ -809,7 +809,7 @@ export function SidebarMenu({
   const [headerScrolled, setHeaderScrolled] = useState(false);
   /**
    * Parent still has `sidebarCollapsed === true`, but pointer is over the menu `<nav>` or the collapsed
-   * logo — show full-width peek. Clicking the logo hit-area / empty menu pins via `onToggleCollapse`.
+   * logo — show full-width peek. Clicking the logo hit-area pins via `onToggleCollapse`.
    */
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1074,12 +1074,20 @@ export function SidebarMenu({
     }, COLLAPSED_PEEK_LEAVE_MS);
   };
 
-  /** Open peek when pointer enters `<nav>`; collapsed logo uses `openMenuPeek()` the same way. */
-  const onMenuPeekMouseEnter = () => openMenuPeek();
+  /** Peek opens from logo or when hovering real controls inside `<nav>`, not empty padding/spacer. */
+  const MENU_PEEK_INTERACTIVE_SELECTOR =
+    'button, a[href], input, textarea, select, [role="button"]';
+
+  const onNavPeekMouseOver = (e: MouseEvent<HTMLElement>) => {
+    if (!sidebarCollapsed) return;
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    if (t.closest(MENU_PEEK_INTERACTIVE_SELECTOR)) openMenuPeek();
+  };
 
   /**
    * Cancel a pending peek close when the pointer re-enters the sidebar (e.g. after a brief gap).
-   * Does not open peek by itself (logo / `<nav>` call `openMenuPeek`).
+   * Does not open peek by itself (logo / nav interactive hover call `openMenuPeek`).
    */
   const onSidebarPeekMouseEnter = () => {
     if (!sidebarCollapsed) return;
@@ -1127,21 +1135,6 @@ export function SidebarMenu({
         {node}
       </Tooltip>
     );
-  };
-
-  /** Collapsed rail: empty menu padding / gap / below icons opens sidebar (same as logo control). */
-  const handleCollapsedMenuClick = (e: MouseEvent<HTMLElement>) => {
-    if (!sidebarCollapsed) return;
-    const raw = e.target;
-    const el =
-      raw instanceof Element
-        ? raw
-        : raw instanceof Text && raw.parentElement
-          ? raw.parentElement
-          : null;
-    if (!el) return;
-    if (el.closest("button, a[href], input, textarea, select")) return;
-    onToggleCollapse?.();
   };
 
   type NavButtonOptions = {
@@ -1299,8 +1292,7 @@ export function SidebarMenu({
       <nav
         ref={menuScrollRef}
         className={styles.menu}
-        onClick={sidebarCollapsed ? handleCollapsedMenuClick : undefined}
-        onMouseEnter={sidebarCollapsed ? onMenuPeekMouseEnter : undefined}
+        onMouseOver={sidebarCollapsed ? onNavPeekMouseOver : undefined}
       >
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Actions</p>

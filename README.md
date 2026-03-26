@@ -12,8 +12,8 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 
 - **Expanded width** (~300px) with org headline, user block, and full labels.
 - **Collapsed rail** (~68px): icon-first nav; section titles and nav chevrons/labels hide per CSS.
-- **Hover peek:** While collapsed, hovering the **menu** or the **logo** temporarily expands the sidebar to full width (parent still treats it as “collapsed” until you pin).
-- **Pin:** Use the header control during peek, **click the logo hit-area**, **⌘S**, or empty rail/menu click behavior (see app wiring) to keep the sidebar fully expanded.
+- **Hover peek:** While collapsed, hovering the **logo** or an **interactive nav control** (button, link, etc.) temporarily expands the sidebar to full width. Empty padding and the bottom spacer do **not** trigger peek (parent still treats it as “collapsed” until you pin).
+- **Pin:** Use the header control during peek, **click the logo hit-area**, or **⌘S** to keep the sidebar fully expanded.
 - **Header collapse/Pin** uses contextual icons (e.g. open panel, pin) and tooltips (“Collapse sidebar,” “Pin sidebar”) with **⌘S** where applicable.
 
 ### Navigation & content
