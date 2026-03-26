@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MouseEvent, ReactNode } from "react";
+import type { FocusEvent, MouseEvent, ReactNode } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   BookBookmark02Icon,
@@ -31,6 +31,9 @@ const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
 /** Starred / Recents row control — icon 14×14 inside 20×20 hit target (see `.chatStarBtn` in CSS). */
 const CHAT_STAR_ICON_PX = 14;
 
+/** Delay before closing hover-peek so brief pointer gaps / tooltip paths do not flicker the rail. */
+const COLLAPSED_PEEK_LEAVE_MS = 180;
+
 /** Default sub-nav labels — keep in sync with `SidebarMenu` prop defaults; App uses `[0]` as initial selection. */
 export const DEFAULT_CHIEF_OF_STAFF_ITEMS = [
   "Briefing",
@@ -60,13 +63,19 @@ export type SidebarNavId =
   | "controls"
   | "wisdom";
 
+/** Stable chat row identity; `title` is display-only and may duplicate across rows. */
+export type SidebarChatItem = { id: string; title: string };
+
 export interface SidebarMenuProps {
   organizationName: string;
   userName: string;
   logoSrc?: string;
   activeNavId?: SidebarNavId;
-  /** Highlights a Starred / Recents row with the selected style when set (index matches list position). */
-  selectedChat?: { section: "starred" | "recents"; index: number } | null;
+  /** Highlights a Starred / Recents row when set (`chatId` is stable; `section` disambiguates same id if ever reused). */
+  selectedChat?: {
+    section: "starred" | "recents";
+    chatId: string;
+  } | null;
   /**
    * Shortcut shown on the right of "New question" on hover/focus (inline in the row).
    * Defaults to "⇧⌘O". Pass `null` to hide it and omit `aria-keyshortcuts` on that control.
@@ -77,24 +86,23 @@ export interface SidebarMenuProps {
   /** When true, sidebar is collapsed; collapse button shows "Open sidebar" tooltip. */
   sidebarCollapsed?: boolean;
   /**
-   * Titles in `recentChats` that are starred (unique). The Starred section lists them in the same
-   * order they appear in `recentChats` (a filtered subset), not a separate ordering.
+   * Chat ids (subset of `recentChats`) that are starred. Starred UI lists those chats in Recents order.
    */
-  starredChats?: string[];
-  /** Full chat list; Starred is always a filtered subset of these rows. */
-  recentChats?: string[];
+  starredChatIds?: string[];
+  /** Full chat list; Starred is always a filtered subset by `starredChatIds`. */
+  recentChats?: SidebarChatItem[];
   onChatClick?: (
-    title: string,
+    chat: SidebarChatItem,
     section: "starred" | "recents",
     index: number,
   ) => void;
   /** Remove a chat from Starred (star control). */
-  onRemoveStarredChat?: (title: string, index: number) => void;
+  onRemoveStarredChat?: (chatId: string) => void;
   /**
    * Toggle Starred from a Recents row: gray star adds the chat to Starred (orange);
    * orange star removes it from Starred and returns the Recents star to gray.
    */
-  onToggleRecentStar?: (title: string) => void;
+  onToggleRecentStar?: (chatId: string) => void;
   /** Initial open state for Starred chat list. Default: true. */
   defaultStarredOpen?: boolean;
   /** Initial open state for Recents chat list. Default: true. */
@@ -309,22 +317,31 @@ export function SidebarMenu({
   onNavClick,
   onToggleCollapse,
   sidebarCollapsed = false,
-  starredChats = [
-    "Assemble Demo generation",
-    "CRM/Marketing automation spend per MAU",
-    "Daily insights for Dove skincare brand",
+  starredChatIds = [
+    "chat-assemble-demo",
+    "chat-crm-mau",
+    "chat-dove-daily",
   ],
   recentChats = [
-    "Assemble Demo generation",
-    "ABI x Unilever",
-    "Assemble Projects Documentation 2026",
-    "AstraZeneca account summary",
-    "Revlon AI workflow transformation",
-    "[beta.2] Unilever S&OP analytics report",
-    "[beta.1] Unilever S&OP analytics report",
-    "CRM/Marketing automation spend per MAU",
-    "Klaviyo vs Braze MAU comparison",
-    "Daily insights for Dove skincare brand",
+    { id: "chat-assemble-demo", title: "Assemble Demo generation" },
+    { id: "chat-abi-unilever", title: "ABI x Unilever" },
+    {
+      id: "chat-assemble-projects-doc",
+      title: "Assemble Projects Documentation 2026",
+    },
+    { id: "chat-astrazeneca", title: "AstraZeneca account summary" },
+    { id: "chat-revlon", title: "Revlon AI workflow transformation" },
+    {
+      id: "chat-beta-2-unilever-sop",
+      title: "[beta.2] Unilever S&OP analytics report",
+    },
+    {
+      id: "chat-beta-1-unilever-sop",
+      title: "[beta.1] Unilever S&OP analytics report",
+    },
+    { id: "chat-crm-mau", title: "CRM/Marketing automation spend per MAU" },
+    { id: "chat-klaviyo-mau", title: "Klaviyo vs Braze MAU comparison" },
+    { id: "chat-dove-daily", title: "Daily insights for Dove skincare brand" },
   ],
   onChatClick,
   onRemoveStarredChat,
@@ -361,12 +378,28 @@ export function SidebarMenu({
   const collapsedLogoHoverSuppressedUntilRef = useRef(0);
   /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
   const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
+  /**
+   * Parent still has `sidebarCollapsed === true`, but pointer is over `<nav className={styles.menu}>` —
+   * show full-width peek. Header/logo rail does not trigger peek.
+   * Clicking “Open sidebar” / empty menu (existing behavior) sets pinned expanded via `onToggleCollapse`.
+   */
+  const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
+  const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const starredTitleSet = useMemo(() => new Set(starredChats), [starredChats]);
+  const clearPeekLeaveTimer = () => {
+    if (peekLeaveTimerRef.current !== null) {
+      window.clearTimeout(peekLeaveTimerRef.current);
+      peekLeaveTimerRef.current = null;
+    }
+  };
+
+  const isCollapsedRail = sidebarCollapsed && !collapsedHoverPeek;
+
+  const starredIdSet = useMemo(() => new Set(starredChatIds), [starredChatIds]);
   /** Starred rows only: same order as in `recentChats`. */
   const starredChatsOrdered = useMemo(
-    () => recentChats.filter((t) => starredTitleSet.has(t)),
-    [recentChats, starredTitleSet],
+    () => recentChats.filter((c) => starredIdSet.has(c.id)),
+    [recentChats, starredIdSet],
   );
 
   const clearPendingNavTimeout = () => {
@@ -388,7 +421,16 @@ export function SidebarMenu({
       el.removeEventListener("scroll", sync);
       ro.disconnect();
     };
+  }, [sidebarCollapsed, collapsedHoverPeek]);
+
+  useEffect(() => {
+    if (!sidebarCollapsed) {
+      clearPeekLeaveTimer();
+      setCollapsedHoverPeek(false);
+    }
   }, [sidebarCollapsed]);
+
+  useEffect(() => () => clearPeekLeaveTimer(), []);
 
   const activeExpandableSubListIsOpen = (): boolean => {
     switch (activeNavId) {
@@ -509,17 +551,17 @@ export function SidebarMenu({
   }, []);
 
   useEffect(() => {
-    if (sidebarCollapsed) {
+    if (sidebarCollapsed && !collapsedHoverPeek) {
       clearPendingNavTimeout();
       setChiefOfStaffListOpen(false);
       setKnowledgeListOpen(false);
       setControlsListOpen(false);
       setWisdomListOpen(false);
     }
-  }, [sidebarCollapsed]);
+  }, [sidebarCollapsed, collapsedHoverPeek]);
 
   useEffect(() => {
-    if (!sidebarCollapsed) {
+    if (!sidebarCollapsed || collapsedHoverPeek) {
       setCollapsedLogoHover(false);
       return;
     }
@@ -531,7 +573,7 @@ export function SidebarMenu({
       if (el?.matches(":hover")) setCollapsedLogoHover(true);
     }, COLLAPSED_LOGO_HOVER_SUPPRESS_MS + 20);
     return () => window.clearTimeout(t);
-  }, [sidebarCollapsed]);
+  }, [sidebarCollapsed, collapsedHoverPeek]);
 
   useEffect(() => {
     if (activeNavId !== "chief-of-staff") {
@@ -558,6 +600,64 @@ export function SidebarMenu({
 
   const collapseActionLabel = sidebarCollapsed ? "Open sidebar" : "Collapse sidebar";
 
+  const openMenuPeek = () => {
+    if (!sidebarCollapsed) return;
+    clearPeekLeaveTimer();
+    setCollapsedHoverPeek(true);
+  };
+
+  const scheduleMenuPeekClose = () => {
+    if (!sidebarCollapsed) return;
+    clearPeekLeaveTimer();
+    peekLeaveTimerRef.current = window.setTimeout(() => {
+      peekLeaveTimerRef.current = null;
+      setCollapsedHoverPeek(false);
+    }, COLLAPSED_PEEK_LEAVE_MS);
+  };
+
+  /** Open peek only when pointer enters `<nav>` (hovering header / logo alone does not expand). */
+  const onMenuPeekMouseEnter = () => openMenuPeek();
+
+  /**
+   * Cancel a pending peek close when the pointer re-enters the sidebar (e.g. after a brief gap).
+   * Does not open peek by itself — header-only hover stays collapsed until `onMenuPeekMouseEnter`.
+   */
+  const onSidebarPeekMouseEnter = () => {
+    if (!sidebarCollapsed) return;
+    clearPeekLeaveTimer();
+  };
+
+  /** Close peek only when the pointer leaves the whole `<aside>`, not when moving nav ↔ header. */
+  const onSidebarPeekMouseLeave = (e: MouseEvent<HTMLElement>) => {
+    if (!sidebarCollapsed) return;
+    const next = e.relatedTarget;
+    if (next instanceof Node && e.currentTarget.contains(next)) return;
+    scheduleMenuPeekClose();
+  };
+
+  /** Keyboard / focus parity: peek stays while focus moves within the full sidebar (nav + header). */
+  const onSidebarPeekFocusIn = () => {
+    if (!sidebarCollapsed) return;
+    openMenuPeek();
+  };
+
+  /**
+   * Peek closes when focus truly leaves the sidebar. Defer so React/DOM can settle.
+   * If focus drops to `body` after a control unmounts (e.g. remove from Starred) or after
+   * an intentional `blur()`, keep peek open while the pointer is still over the sidebar.
+   */
+  const onSidebarPeekFocusOut = (e: FocusEvent<HTMLElement>) => {
+    if (!sidebarCollapsed) return;
+    const next = e.relatedTarget;
+    if (next instanceof Node && e.currentTarget.contains(next)) return;
+    const asideEl = e.currentTarget;
+    window.setTimeout(() => {
+      if (asideEl.contains(document.activeElement)) return;
+      if (asideEl.matches(":hover")) return;
+      scheduleMenuPeekClose();
+    }, 0);
+  };
+
   const onCollapsedLogoMouseEnter = () => {
     if (Date.now() < collapsedLogoHoverSuppressedUntilRef.current) return;
     setCollapsedLogoHover(true);
@@ -566,7 +666,7 @@ export function SidebarMenu({
   const onCollapsedLogoMouseLeave = () => setCollapsedLogoHover(false);
 
   const wrapCollapsedNavLabel = (label: string, node: ReactNode) => {
-    if (!sidebarCollapsed) return node;
+    if (!isCollapsedRail) return node;
     return (
       <Tooltip
         label={label}
@@ -634,7 +734,7 @@ export function SidebarMenu({
       </button>
     );
 
-    if (sidebarCollapsed) {
+    if (isCollapsedRail) {
       return (
         <Tooltip
           label={label}
@@ -652,9 +752,13 @@ export function SidebarMenu({
   return (
     <aside
       className={`${styles.sidebar} ${
-        sidebarCollapsed ? styles.sidebarCollapsed : ""
+        isCollapsedRail ? styles.sidebarCollapsed : ""
       }`}
       aria-label="Main navigation"
+      onMouseEnter={sidebarCollapsed ? onSidebarPeekMouseEnter : undefined}
+      onMouseLeave={sidebarCollapsed ? onSidebarPeekMouseLeave : undefined}
+      onFocus={sidebarCollapsed ? onSidebarPeekFocusIn : undefined}
+      onBlur={sidebarCollapsed ? onSidebarPeekFocusOut : undefined}
     >
       <header
         className={`${styles.header} ${
@@ -664,7 +768,7 @@ export function SidebarMenu({
         <div className={styles.logoRow}>
           <div
             className={`${styles.logoColumn} ${
-              sidebarCollapsed ? styles.logoColumnCollapsed : ""
+              isCollapsedRail ? styles.logoColumnCollapsed : ""
             }`.trim()}
           >
             <div className={styles.logo}>
@@ -676,7 +780,7 @@ export function SidebarMenu({
                 decoding="async"
               />
             </div>
-            {sidebarCollapsed ? (
+            {isCollapsedRail ? (
               <Tooltip
                 label="Open sidebar"
                 shortcut="⌘."
@@ -713,7 +817,7 @@ export function SidebarMenu({
               </Tooltip>
             ) : null}
           </div>
-          {!sidebarCollapsed ? (
+          {!isCollapsedRail ? (
             <Tooltip label={collapseActionLabel} shortcut="⌘.">
               <button
                 type="button"
@@ -733,7 +837,7 @@ export function SidebarMenu({
             </Tooltip>
           ) : null}
         </div>
-        {!sidebarCollapsed ? (
+        {!isCollapsedRail ? (
           <div className={styles.headline}>
             <div className={styles.orgNameRow}>
               <p className={styles.orgName}>{organizationName}</p>
@@ -750,6 +854,7 @@ export function SidebarMenu({
         ref={menuScrollRef}
         className={styles.menu}
         onClick={sidebarCollapsed ? handleCollapsedMenuClick : undefined}
+        onMouseEnter={sidebarCollapsed ? onMenuPeekMouseEnter : undefined}
       >
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Actions</p>
@@ -920,12 +1025,12 @@ export function SidebarMenu({
               </span>
             </button>
             {starredOpen
-              ? starredChatsOrdered.map((title, index) => (
+              ? starredChatsOrdered.map((chat, index) => (
                   <div
-                    key={`starred-${index}-${title}`}
+                    key={`starred-${chat.id}`}
                     className={`${styles.chatRow} ${styles.chatRowStarred} ${
                       selectedChat?.section === "starred" &&
-                      selectedChat.index === index
+                      selectedChat.chatId === chat.id
                         ? styles.chatRowSelected
                         : ""
                     }`}
@@ -935,22 +1040,22 @@ export function SidebarMenu({
                       className={styles.chatRowMain}
                       aria-current={
                         selectedChat?.section === "starred" &&
-                        selectedChat.index === index
+                        selectedChat.chatId === chat.id
                           ? "true"
                           : undefined
                       }
-                      onClick={() => onChatClick?.(title, "starred", index)}
+                      onClick={() => onChatClick?.(chat, "starred", index)}
                     >
-                      <span className={styles.chatLabel}>{title}</span>
+                      <span className={styles.chatLabel}>{chat.title}</span>
                     </button>
                     <span className={styles.chatStarTooltipWrap}>
                       <button
                         type="button"
                         className={styles.chatStarBtn}
-                        aria-label={`Remove «${title}» from Starred`}
+                        aria-label={`Remove «${chat.title}» from Starred`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRemoveStarredChat?.(title, index);
+                          onRemoveStarredChat?.(chat.id);
                         }}
                       >
                         <HugeiconsIcon
@@ -983,14 +1088,14 @@ export function SidebarMenu({
             </span>
           </button>
           {recentsOpen
-            ? recentChats.map((title, index) => {
-                const isStarredInList = starredTitleSet.has(title);
+            ? recentChats.map((chat, index) => {
+                const isStarredInList = starredIdSet.has(chat.id);
                 return (
                   <div
-                    key={`recent-${index}-${title}`}
+                    key={`recent-${chat.id}`}
                     className={`${styles.chatRow} ${styles.chatRowRecent} ${
                       selectedChat?.section === "recents" &&
-                      selectedChat.index === index
+                      selectedChat.chatId === chat.id
                         ? styles.chatRowSelected
                         : ""
                     }`}
@@ -1000,13 +1105,13 @@ export function SidebarMenu({
                       className={styles.chatRowMain}
                       aria-current={
                         selectedChat?.section === "recents" &&
-                        selectedChat.index === index
+                        selectedChat.chatId === chat.id
                           ? "true"
                           : undefined
                       }
-                      onClick={() => onChatClick?.(title, "recents", index)}
+                      onClick={() => onChatClick?.(chat, "recents", index)}
                     >
-                      <span className={styles.chatLabel}>{title}</span>
+                      <span className={styles.chatLabel}>{chat.title}</span>
                     </button>
                     <span className={styles.chatStarTooltipWrap}>
                       <button
@@ -1016,13 +1121,12 @@ export function SidebarMenu({
                         }`}
                         aria-label={
                           isStarredInList
-                            ? `Remove «${title}» from Starred`
-                            : `Add «${title}» to Starred`
+                            ? `Remove «${chat.title}» from Starred`
+                            : `Add «${chat.title}» to Starred`
                         }
                         onClick={(e) => {
                           e.stopPropagation();
-                          onToggleRecentStar?.(title);
-                          e.currentTarget.blur();
+                          onToggleRecentStar?.(chat.id);
                         }}
                       >
                         <HugeiconsIcon
@@ -1039,7 +1143,7 @@ export function SidebarMenu({
               })
             : null}
         </div>
-        {sidebarCollapsed ? (
+        {isCollapsedRail ? (
           <div className={styles.menuCollapsedSpacer} aria-hidden />
         ) : null}
       </nav>
