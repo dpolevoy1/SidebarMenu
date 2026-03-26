@@ -98,7 +98,8 @@ export interface SidebarMenuProps {
   /** When true, sidebar is collapsed; collapse button shows "Open sidebar" tooltip. */
   sidebarCollapsed?: boolean;
   /**
-   * Chat ids (subset of `recentChats`) that are starred. Starred UI lists those chats in Recents order.
+   * Chat ids (subset of `recentChats`) that are starred. Starred list order follows this array
+   * (newly starred / opened-from-recents ids are typically prepended by the parent).
    */
   starredChatIds?: string[];
   /** Full chat list; Starred is always a filtered subset by `starredChatIds`. */
@@ -403,11 +404,13 @@ export function SidebarMenu({
   const isCollapsedRail = sidebarCollapsed && !collapsedHoverPeek;
 
   const starredIdSet = useMemo(() => new Set(starredChatIds), [starredChatIds]);
-  /** Starred rows only: same order as in `recentChats`. */
-  const starredChatsOrdered = useMemo(
-    () => recentChats.filter((c) => starredIdSet.has(c.id)),
-    [recentChats, starredIdSet],
-  );
+  /** Starred rows only: order matches `starredChatIds` (not Recents order). */
+  const starredChatsOrdered = useMemo(() => {
+    const byId = new Map(recentChats.map((c) => [c.id, c]));
+    return starredChatIds
+      .map((id) => byId.get(id))
+      .filter((c): c is SidebarChatItem => c != null);
+  }, [recentChats, starredChatIds]);
 
   const clearPendingNavTimeout = () => {
     if (pendingNavTimeoutRef.current !== null) {

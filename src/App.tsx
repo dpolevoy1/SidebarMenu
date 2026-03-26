@@ -138,6 +138,12 @@ export default function App() {
             setSelectedControlsItem(null);
             setSelectedWisdomItem(null);
             setActiveNavId("post-meeting-insights");
+            if (section === "recents") {
+              setStarredChatIds((prev) => {
+                if (!prev.includes(chat.id)) return prev;
+                return [chat.id, ...prev.filter((id) => id !== chat.id)];
+              });
+            }
           }}
           onRemoveStarredChat={(chatId) => {
             setStarredChatIds((prev) => prev.filter((id) => id !== chatId));
