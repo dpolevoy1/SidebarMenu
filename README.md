@@ -22,6 +22,27 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 - **Intelligence:** Knowledge, Controls, Wisdom — each can expose an expandable sub-list with staggered open/close motion.
 - **Starred & Recents:** Chats are modeled as `{ id, title }` (`SidebarChatItem`). Starred is a **filtered subset** of recents by id (`starredChatIds`), order follows recents. Rows support star/unstar and selection by **chat id**.
 
+### Sidebar Lottie icons
+
+Several nav rows use **Lottie** (Bodymovin JSON in `public/animations/`) via **`lottie-react`**, instead of static Hugeicons:
+
+- **Rest pose:** last frame of each animation (no autoplay loop).
+- **Hover:** pointer over the **whole row** plays from frame 0 once; leaving snaps back to rest.
+- **Speed:** playback is slightly faster than authored (~`1.35×`) for snappier feedback.
+- **Active row:** stroked paths follow **`currentColor`** like text (`--color-primary-600` when selected) without breaking mattes.
+- **Fallback:** if JSON fails to fetch, the prior Hugeicons glyph for that row is shown.
+
+| JSON asset | Nav item |
+|------------|----------|
+| `anima_cos.json` | Chief of Staff |
+| `anima_knowledge.json` | Knowledge |
+| `anima_controls.json` | Controls |
+| `anima_reports.json` | Reports |
+| `anima_insights.json` | Post meeting insights |
+| `anima_wisdom.json` | Wisdom |
+
+Other JSON files in `public/animations/` may exist for future UI (they are not all wired in code yet).
+
 ### Accessibility & input
 
 - **⌘S** — Toggles collapse / expand from rail, pins when in hover-peek (same idea as the primary sidebar control).
@@ -33,7 +54,8 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 
 - **React 19**, **TypeScript**, **Vite 6**
 - **Tailwind CSS v4** (via `@tailwindcss/vite`), plus **tailwind-animations**
-- **Hugeicons** (`@hugeicons/react`, `@hugeicons/core-free-icons`)
+- **Hugeicons** (`@hugeicons/react`, `@hugeicons/core-free-icons`) — fallbacks and non-Lottie UI
+- **Lottie** (`lottie-react`) — animated sidebar nav icons
 - Optional **Agentation** dev integration in `App` (endpoint configurable)
 
 ---
@@ -59,8 +81,9 @@ npm run preview  # serve production build locally
 | Path | Purpose |
 |------|---------|
 | `src/App.tsx` | Demo shell: sidebar collapse state, chat/starred ids, nav selection, `Agentation` mount |
-| `src/components/SidebarMenu/` | Sidebar UI, collapse/peek logic, keyboard shortcuts, CSS module |
+| `src/components/SidebarMenu/` | Sidebar UI, collapse/peek logic, keyboard shortcuts, Lottie icons, CSS module |
 | `src/components/Tooltip/` | Shared tooltip (cursor-anchored, hover-only) |
+| `public/animations/` | Lottie JSON assets served at `/animations/*.json` |
 | `src/index.css` | Global / Tailwind entry |
 
 Public API for the sidebar is exported from `src/components/SidebarMenu/index.ts` (`SidebarMenu`, defaults, `SidebarMenuProps`, `SidebarNavId`, `SidebarChatItem`).

@@ -9,7 +9,7 @@ import Lottie, {
   type LottieRef,
   type LottieRefCurrentProps,
 } from "lottie-react";
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BookBookmark02Icon,
   Brain03Icon,
@@ -151,30 +151,13 @@ export interface SidebarMenuProps {
   onWisdomItemClick?: (title: string, index: number) => void;
 }
 
-function NavIcon({
-  icon,
-  size = 20,
-}: {
-  icon: IconSvgElement;
-  size?: number;
-}) {
-  return (
-    <span className={styles.navIcon}>
-      <HugeiconsIcon
-        icon={icon}
-        size={size}
-        strokeWidth={1.75}
-        color="currentColor"
-        aria-hidden
-      />
-    </span>
-  );
-}
-
 /** Nav Lottie icons: >1 plays faster on hover (rest pose unchanged). */
 const KNOWLEDGE_LOTTIE_PLAYBACK_SPEED = 1.35;
 const CONTROLS_LOTTIE_PLAYBACK_SPEED = 1.35;
 const REPORTS_LOTTIE_PLAYBACK_SPEED = 1.35;
+const INSIGHTS_LOTTIE_PLAYBACK_SPEED = 1.35;
+const WISDOM_LOTTIE_PLAYBACK_SPEED = 1.35;
+const CHIEF_OF_STAFF_LOTTIE_PLAYBACK_SPEED = 1.35;
 
 /** Shared fetch for Knowledge Lottie (Bodymovin JSON in `/public/animations/`). */
 let knowledgeLottieJsonPromise: Promise<object> | null = null;
@@ -219,6 +202,52 @@ function loadReportsLottieJson(): Promise<object> {
     });
   }
   return reportsLottieJsonPromise;
+}
+
+/** Shared fetch for Post meeting insights Lottie (`/public/animations/anima_insights.json`). */
+let insightsLottieJsonPromise: Promise<object> | null = null;
+
+function loadInsightsLottieJson(): Promise<object> {
+  if (!insightsLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_insights.json`;
+    insightsLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Insights animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return insightsLottieJsonPromise;
+}
+
+/** Shared fetch for Wisdom Lottie (`/public/animations/anima_wisdom.json`). */
+let wisdomLottieJsonPromise: Promise<object> | null = null;
+
+function loadWisdomLottieJson(): Promise<object> {
+  if (!wisdomLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_wisdom.json`;
+    wisdomLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Wisdom animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return wisdomLottieJsonPromise;
+}
+
+/** Shared fetch for Chief of Staff Lottie (`/public/animations/anima_cos.json`). */
+let chiefOfStaffLottieJsonPromise: Promise<object> | null = null;
+
+function loadChiefOfStaffLottieJson(): Promise<object> {
+  if (!chiefOfStaffLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_cos.json`;
+    chiefOfStaffLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok)
+        throw new Error(`Failed to load Chief of Staff animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return chiefOfStaffLottieJsonPromise;
 }
 
 /** Last composition frame (rest pose) — uses live instance via `getDuration` (lottieRef fields can be stale). */
@@ -387,6 +416,162 @@ function ReportsNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
       ) : (
         <HugeiconsIcon
           icon={DocumentAttachmentIcon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
+    </span>
+  );
+}
+
+/**
+ * Post meeting insights nav row icon — Lottie from `public/animations/anima_insights.json`.
+ */
+function InsightsNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadInsightsLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep file-view fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.insightsNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.navLottieHost}
+          onDOMLoaded={() => {
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(INSIGHTS_LOTTIE_PLAYBACK_SPEED);
+                navLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={FileViewIcon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
+    </span>
+  );
+}
+
+/**
+ * Wisdom nav row icon — Lottie from `public/animations/anima_wisdom.json`.
+ */
+function WisdomNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadWisdomLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep brain glyph fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.wisdomNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.navLottieHost}
+          onDOMLoaded={() => {
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(WISDOM_LOTTIE_PLAYBACK_SPEED);
+                navLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={Brain03Icon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
+    </span>
+  );
+}
+
+/**
+ * Chief of Staff nav row icon — Lottie from `public/animations/anima_cos.json`.
+ */
+function ChiefOfStaffNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadChiefOfStaffLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep location-user fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.chiefOfStaffNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.navLottieHost}
+          onDOMLoaded={() => {
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(CHIEF_OF_STAFF_LOTTIE_PLAYBACK_SPEED);
+                navLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={LocationUser03Icon}
           size={20}
           strokeWidth={1.75}
           color="currentColor"
@@ -631,6 +816,9 @@ export function SidebarMenu({
   const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const controlsLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const reportsLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  const insightsLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  const wisdomLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  const chiefOfStaffLottieRef = useRef<LottieRefCurrentProps | null>(null);
 
   const clearPeekLeaveTimer = () => {
     if (peekLeaveTimerRef.current !== null) {
@@ -1142,8 +1330,14 @@ export function SidebarMenu({
                   : undefined
               }
               onClick={() => handleExpandableNavClick("chief-of-staff")}
+              onMouseEnter={() => {
+                chiefOfStaffLottieRef.current?.goToAndPlay(0, true);
+              }}
+              onMouseLeave={() => {
+                navLottieGoToRest(chiefOfStaffLottieRef.current);
+              }}
             >
-              <NavIcon icon={LocationUser03Icon} />
+              <ChiefOfStaffNavIcon lottieRef={chiefOfStaffLottieRef} />
               <span className={styles.navLabel}>Chief of Staff</span>
               <span className={styles.navChevron} aria-hidden>
                 <NavHoverChevron />
@@ -1175,9 +1369,19 @@ export function SidebarMenu({
               },
             },
           )}
-          {navButton("post-meeting-insights", "Post meeting insights", () => (
-            <NavIcon icon={FileViewIcon} />
-          ))}
+          {navButton(
+            "post-meeting-insights",
+            "Post meeting insights",
+            () => <InsightsNavIcon lottieRef={insightsLottieRef} />,
+            {
+              onMouseEnter: () => {
+                insightsLottieRef.current?.goToAndPlay(0, true);
+              },
+              onMouseLeave: () => {
+                navLottieGoToRest(insightsLottieRef.current);
+              },
+            },
+          )}
         </div>
 
         <div className={styles.section}>
@@ -1269,8 +1473,14 @@ export function SidebarMenu({
                 activeNavId === "wisdom" ? wisdomListOpen : undefined
               }
               onClick={() => handleExpandableNavClick("wisdom")}
+              onMouseEnter={() => {
+                wisdomLottieRef.current?.goToAndPlay(0, true);
+              }}
+              onMouseLeave={() => {
+                navLottieGoToRest(wisdomLottieRef.current);
+              }}
             >
-              <NavIcon icon={Brain03Icon} />
+              <WisdomNavIcon lottieRef={wisdomLottieRef} />
               <span className={styles.navLabel}>Wisdom</span>
               <span className={styles.navChevron} aria-hidden>
                 <NavHoverChevron />

@@ -490,8 +490,16 @@
   transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
-/* Knowledge, Controls, Reports: Lottie in the same 20×20 slot */
-:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost {
+/* Knowledge, Controls, Reports, Insights, Wisdom, Chief of Staff: Lottie in the same 20×20 slot */
+:is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
+  .navLottieHost {
   width: 20px;
   height: 20px;
   overflow: hidden;
@@ -500,7 +508,16 @@
   justify-content: center;
 }
 
-:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost svg {
+:is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
+  .navLottieHost
+  svg {
   width: 20px !important;
   height: 20px !important;
   display: block;
@@ -511,7 +528,14 @@
  * rule (breaks mattes). lottie-web sets `fill-opacity="0"` on `ty: st` / `ty: gs` paths and
  * always sets `stroke-linecap` (round *or* butt — Controls uses butt / `lc: 1`).
  */
-:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon)
+:is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
   .navLottieHost
   svg
   path[fill-opacity="0"][stroke-linecap] {
@@ -519,7 +543,14 @@
 }
 
 .navRowActive
-  :is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon)
+  :is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
   .navLottieHost
   svg
   path[fill-opacity="0"][stroke-linecap] {
@@ -527,8 +558,25 @@
 }
 
 /* Hover/click hit the row `<button>` (same pattern as `.navIcon svg`) */
-:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost,
-:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost * {
+:is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
+  .navLottieHost,
+:is(
+    .knowledgeNavIcon,
+    .controlsNavIcon,
+    .reportsNavIcon,
+    .insightsNavIcon,
+    .wisdomNavIcon,
+    .chiefOfStaffNavIcon
+  )
+  .navLottieHost
+  * {
   pointer-events: none;
 }
 
@@ -547,7 +595,7 @@
 
 /* Lottie nav icons — keep pixel-stable on hover (no scale) */
 .navRow:hover
-  .navIcon:not(.knowledgeNavIcon):not(.controlsNavIcon):not(.reportsNavIcon) {
+  .navIcon:not(.knowledgeNavIcon):not(.controlsNavIcon):not(.reportsNavIcon):not(.insightsNavIcon):not(.wisdomNavIcon):not(.chiefOfStaffNavIcon) {
   transform: scale(1.06);
 }
 
