@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Agentation } from "agentation";
 import {
   SidebarMenu,
   DEFAULT_CHIEF_OF_STAFF_ITEMS,
@@ -42,8 +43,9 @@ export default function App() {
   } | null>(null);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <SidebarMenu
+    <>
+      <div style={{ display: "flex", height: "100vh" }}>
+        <SidebarMenu
         organizationName="Unilever"
         userName="Maximilian Metti"
         sidebarCollapsed={sidebarCollapsed}
@@ -120,7 +122,9 @@ export default function App() {
               : [title, ...prev],
           );
         }}
-      />
-    </div>
+        />
+      </div>
+      <Agentation endpoint="http://localhost:4747" />
+    </>
   );
 }

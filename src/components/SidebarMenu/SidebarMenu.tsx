@@ -346,9 +346,6 @@ export function SidebarMenu({
   const [knowledgeListOpen, setKnowledgeListOpen] = useState(false);
   const [controlsListOpen, setControlsListOpen] = useState(false);
   const [wisdomListOpen, setWisdomListOpen] = useState(false);
-  /** Brief row id: after mouse leaves a chat row, show star + label for 100ms (matches design hover-out). */
-  const [starExitHint, setStarExitHint] = useState<string | null>(null);
-  const starExitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingNavTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -494,9 +491,6 @@ export function SidebarMenu({
 
   useEffect(() => {
     return () => {
-      if (starExitTimerRef.current !== null) {
-        clearTimeout(starExitTimerRef.current);
-      }
       clearPendingNavTimeout();
     };
   }, []);
@@ -540,26 +534,6 @@ export function SidebarMenu({
       setWisdomListOpen(false);
     }
   }, [activeNavId]);
-
-  const clearStarExitHint = () => {
-    if (starExitTimerRef.current !== null) {
-      clearTimeout(starExitTimerRef.current);
-      starExitTimerRef.current = null;
-    }
-    setStarExitHint(null);
-  };
-
-  const scheduleStarExitHint = (rowKey: string) => {
-    if (starExitTimerRef.current !== null) {
-      clearTimeout(starExitTimerRef.current);
-      starExitTimerRef.current = null;
-    }
-    setStarExitHint(rowKey);
-    starExitTimerRef.current = setTimeout(() => {
-      setStarExitHint(null);
-      starExitTimerRef.current = null;
-    }, 100);
-  };
 
   const newQuestionShortcutBadge =
     newQuestionShortcut === null ? undefined : (newQuestionShortcut ?? "⇧⌘O");
@@ -937,13 +911,7 @@ export function SidebarMenu({
                     selectedChat.index === index
                       ? styles.chatRowSelected
                       : ""
-                  } ${
-                    starExitHint === `starred-${index}`
-                      ? styles.chatRowStarExitHint
-                      : ""
                   }`}
-                  onMouseEnter={clearStarExitHint}
-                  onMouseLeave={() => scheduleStarExitHint(`starred-${index}`)}
                 >
                   <button
                     type="button"
@@ -959,11 +927,6 @@ export function SidebarMenu({
                     <span className={styles.chatLabel}>{title}</span>
                   </button>
                   <span className={styles.chatStarTooltipWrap}>
-                    {starExitHint === `starred-${index}` ? (
-                      <span className={styles.chatStarExitLabel} aria-hidden>
-                        Remove from Starred
-                      </span>
-                    ) : null}
                     <button
                       type="button"
                       className={styles.chatStarBtn}
@@ -1012,13 +975,7 @@ export function SidebarMenu({
                       selectedChat.index === index
                         ? styles.chatRowSelected
                         : ""
-                    } ${
-                      starExitHint === `recents-${index}`
-                        ? styles.chatRowStarExitHint
-                        : ""
                     }`}
-                    onMouseEnter={clearStarExitHint}
-                    onMouseLeave={() => scheduleStarExitHint(`recents-${index}`)}
                   >
                     <button
                       type="button"
@@ -1034,13 +991,6 @@ export function SidebarMenu({
                       <span className={styles.chatLabel}>{title}</span>
                     </button>
                     <span className={styles.chatStarTooltipWrap}>
-                      {starExitHint === `recents-${index}` ? (
-                        <span className={styles.chatStarExitLabel} aria-hidden>
-                          {isStarredInList
-                            ? "Remove from Starred"
-                            : "Add to Starred"}
-                        </span>
-                      ) : null}
                       <button
                         type="button"
                         className={`${styles.chatStarBtn} ${

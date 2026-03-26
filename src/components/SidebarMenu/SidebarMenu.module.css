@@ -49,6 +49,7 @@
 /* One <img> stays mounted in .logoColumn; collapsed overlay stacks on top (no img remount). */
 .logoColumn {
   flex-shrink: 0;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .logoColumnCollapsed {
@@ -220,6 +221,7 @@
   justify-content: space-between;
   width: 100%;
   overflow: visible;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .logo {
@@ -228,6 +230,7 @@
   flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .logo img {
@@ -235,6 +238,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .collapseBtn {
@@ -251,7 +255,9 @@
   cursor: pointer;
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
-    color var(--nav-state-duration) var(--nav-state-ease);
+    color var(--nav-state-duration) var(--nav-state-ease),
+    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .collapseBtn:focus-visible {
@@ -265,6 +271,7 @@
   gap: 2px;
   justify-content: center;
   width: 100%;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .orgNameRow {
@@ -273,6 +280,7 @@
   gap: 6px;
   width: 100%;
   min-width: 0;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .orgName {
@@ -287,6 +295,7 @@
   font-weight: 500;
   line-height: 24px;
   color: var(--color-secondary-600);
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .orgNameChevron {
@@ -325,6 +334,7 @@
   line-height: 16px;
   letter-spacing: 0.18px;
   color: var(--color-secondary-500);
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .menu {
@@ -344,6 +354,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .sectionLabel {
@@ -365,6 +376,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition:
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    padding var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    max-width var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .sectionHeadline {
@@ -481,7 +498,11 @@
   color: var(--color-secondary-600);
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
-    color var(--nav-state-duration) var(--nav-state-ease);
+    color var(--nav-state-duration) var(--nav-state-ease),
+    gap var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    padding var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    max-width var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 /* Same hover as nav rows: Primary-300 hover + Secondary-700 */
@@ -508,7 +529,15 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  transition: transform var(--nav-state-duration) var(--nav-state-ease);
+  transition:
+    transform var(--nav-state-duration) var(--nav-state-ease),
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    height var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+}
+
+.navIcon svg {
+  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 /* Let clicks hit the <button>, not the SVG hit-area */
@@ -543,6 +572,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition:
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 /* Inline shortcut on the right (hover/focus); same layering idea as .navChevron */
@@ -641,7 +673,11 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  transition: transform var(--nav-state-duration) var(--nav-state-ease);
+  transition:
+    transform var(--nav-state-duration) var(--nav-state-ease),
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    height var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 .navRow:hover .newQuestionIcon {
@@ -774,8 +810,8 @@
   max-width: 300px;
   height: 38px;
   max-height: 38px;
-  padding: 8px 12px;
-  align-items: center;
+  padding: 0;
+  align-items: stretch;
   gap: 0;
   cursor: default;
 }
@@ -786,7 +822,7 @@
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  padding: 0;
+  padding: 8px 12px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -797,17 +833,17 @@
 
 .chatRowStarred:hover .chatRowMain,
 .chatRowStarred:focus-within .chatRowMain {
-  /* Reserve space for 20×20 star control + gap so title ellipses */
-  padding-right: 32px;
+  /* Reserve space for 20×20 star control + gap so title ellipses (12px base + 32px reserve = 44px) */
+  padding-right: 44px;
 }
 
 /* Recents: reserve title space only on row hover or when the star is keyboard-focused (not :focus-within, so click focus does not keep the star visible) */
 .chatRowRecent:hover .chatRowMain,
 .chatRowRecent:has(.chatStarBtn:focus-visible) .chatRowMain {
-  padding-right: 32px;
+  padding-right: 44px;
 }
 
-/* Anchor for star control + optional exit-hint label (to the left of the icon) */
+/* Anchor for star control at the right of the chat row */
 .chatStarTooltipWrap {
   position: absolute;
   right: 12px;
@@ -818,36 +854,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
   min-width: 0;
-  max-width: min(200px, calc(100% - 24px));
-}
-
-.chatStarExitLabel {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 12px;
-  letter-spacing: 0.15px;
-  text-align: right;
-  color: var(--color-secondary-600);
-  pointer-events: none;
-}
-
-/* After pointer leaves the row: 100ms phase — keep star visible and show label (JS-driven class) */
-.chatRowStarExitHint .chatRowMain {
-  padding-right: 140px;
-}
-
-.chatRowStarExitHint .chatStarBtn {
-  opacity: 1;
-  pointer-events: none;
 }
 
 .chatStarBtn {

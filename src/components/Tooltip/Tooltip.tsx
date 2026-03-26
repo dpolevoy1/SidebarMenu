@@ -6,7 +6,6 @@
  */
 import {
   useCallback,
-  useEffect,
   useRef,
   useState,
   type MouseEvent,
@@ -15,7 +14,7 @@ import {
 import { createPortal } from "react-dom";
 import styles from "./Tooltip.module.css";
 
-/** Horizontal gap from cursor — tooltip’s left edge sits at cursor X + GAP_X. */
+/** Horizontal gap from cursor — tooltip's left edge sits at cursor X + GAP_X. */
 const GAP_X = 12;
 /** Vertical offset so the tooltip sits slightly below the pointer / anchor. */
 const GAP_Y = 6;
@@ -30,14 +29,6 @@ export type TooltipProps = {
   /** Extra class on the outer wrapper (e.g. absolute anchor for icon buttons). */
   wrapperClassName?: string;
 };
-
-function positionFromElement(el: HTMLElement) {
-  const r = el.getBoundingClientRect();
-  return {
-    left: r.right + GAP_X,
-    top: r.top + r.height / 2 + GAP_Y,
-  };
-}
 
 /**
  * Canonical design-system tooltip — fixed to the **right of the pointer** and
@@ -79,68 +70,9 @@ export function Tooltip({
     [updateFromMouse],
   );
 
-  const handleMouseLeave = useCallback(
-    (e: MouseEvent<HTMLSpanElement>) => {
-      mouseInsideRef.current = false;
-      const wrap = e.currentTarget;
-      if (wrap.matches(":focus-within")) {
-        const active = document.activeElement;
-        if (
-          active instanceof HTMLElement &&
-          wrap.contains(active) &&
-          active.matches(":focus-visible")
-        ) {
-          setPos(positionFromElement(active));
-          return;
-        }
-      }
-      setPos(null);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-
-    let pendingFocusRaf = 0;
-
-    /** Anchor to focused control on any modality. (Mouse-leave still drops the panel unless :focus-visible—avoids stuck tooltips after pointer clicks.) */
-    const applyFocusPosition = () => {
-      if (!wrap.isConnected) return;
-      const active = document.activeElement;
-      if (!(active instanceof HTMLElement) || !wrap.contains(active)) return;
-      setPos(positionFromElement(active));
-    };
-
-    const onFocusIn = (e: FocusEvent) => {
-      const t = e.target;
-      if (!(t instanceof HTMLElement) || !wrap.contains(t)) return;
-      applyFocusPosition();
-      if (pendingFocusRaf !== 0) {
-        cancelAnimationFrame(pendingFocusRaf);
-      }
-      pendingFocusRaf = requestAnimationFrame(() => {
-        pendingFocusRaf = 0;
-        applyFocusPosition();
-      });
-    };
-
-    const onFocusOut = (e: FocusEvent) => {
-      const next = e.relatedTarget as Node | null;
-      if (wrap.contains(next)) return;
-      if (!mouseInsideRef.current) setPos(null);
-    };
-
-    wrap.addEventListener("focusin", onFocusIn);
-    wrap.addEventListener("focusout", onFocusOut);
-    return () => {
-      if (pendingFocusRaf !== 0) {
-        cancelAnimationFrame(pendingFocusRaf);
-      }
-      wrap.removeEventListener("focusin", onFocusIn);
-      wrap.removeEventListener("focusout", onFocusOut);
-    };
+  const handleMouseLeave = useCallback(() => {
+    mouseInsideRef.current = false;
+    setPos(null);
   }, []);
 
   const panel =
