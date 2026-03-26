@@ -24,6 +24,12 @@
 
 /* Figma 8300-9042 — Sidebar / Collapsed: 68px rail, icon-only, logo header */
 .sidebarCollapsed {
+  /*
+   * Asymmetric rail motion: expand stays slow/eased on `.sidebar`; collapse (this class applied)
+   * shortens --sidebar-rail-duration for the aside + all descendants that use the token.
+   */
+  --sidebar-rail-duration: 0.2s;
+  --sidebar-rail-ease: cubic-bezier(0.45, 0, 0.2, 1);
   width: 68px;
   min-width: 68px;
   max-width: 68px;
