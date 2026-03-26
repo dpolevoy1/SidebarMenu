@@ -1,8 +1,8 @@
 /**
  * Default Assemble tooltip — use `Tooltip` for all standard tooltips unless a
- * screen explicitly specifies a different pattern. Styling and pointer/focus
+ * screen explicitly specifies a different pattern. Styling and pointer
  * placement live in `Tooltip.module.css` and are the design-system default
- * (right of the cursor, slightly below; same relationship for keyboard focus).
+ * (right of the cursor, slightly below).
  */
 import {
   useCallback,
@@ -32,8 +32,7 @@ export type TooltipProps = {
 
 /**
  * Canonical design-system tooltip — fixed to the **right of the pointer** and
- * **slightly below** it; with keyboard focus, the same offset from the **right
- * edge** of the focused control.
+ * **slightly below** it. Shown **only while the cursor is over the wrapper** (no focus-only tooltip).
  */
 export function Tooltip({
   label,
@@ -41,7 +40,6 @@ export function Tooltip({
   children,
   wrapperClassName,
 }: TooltipProps) {
-  const wrapRef = useRef<HTMLSpanElement>(null);
   const mouseInsideRef = useRef(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
@@ -92,7 +90,6 @@ export function Tooltip({
   return (
     <>
       <span
-        ref={wrapRef}
         className={`${styles.wrap} ${wrapperClassName ?? ""}`.trim()}
         onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}

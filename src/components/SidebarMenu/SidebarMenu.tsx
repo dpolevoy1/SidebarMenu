@@ -7,7 +7,8 @@ import {
   DocumentAttachmentIcon,
   FileViewIcon,
   LocationUser03Icon,
-  PanelLeftIcon,
+  PanelLeftOpenIcon,
+  PinIcon,
   PlusSignIcon,
   Settings04Icon,
   StarIcon,
@@ -25,14 +26,25 @@ const DEFAULT_LOGO =
  */
 const SUB_NAV_CLOSE_BUFFER_MS = 48;
 
-/** Ignore “hover” on the collapsed logo briefly after toggling so :hover doesn’t apply immediately. */
-const COLLAPSED_LOGO_HOVER_SUPPRESS_MS = 220;
-
 /** Starred / Recents row control — icon 14×14 inside 20×20 hit target (see `.chatStarBtn` in CSS). */
 const CHAT_STAR_ICON_PX = 14;
 
 /** Delay before closing hover-peek so brief pointer gaps / tooltip paths do not flicker the rail. */
 const COLLAPSED_PEEK_LEAVE_MS = 180;
+
+/** Collapse, expand (rail), or pin (hover-peek) — all use ⌘S. */
+const SIDEBAR_TOGGLE_ARIA_KEYSHORTCUTS = "Meta+S";
+const SIDEBAR_TOGGLE_SHORTCUT_DISPLAY = "⌘S";
+
+const NEW_QUESTION_SHORTCUT_DISPLAY_DEFAULT = "⌘Q";
+const NEW_QUESTION_SHORTCUT_ARIA = "Meta+Q";
+
+function isTextEditingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  return target.isContentEditable;
+}
 
 /** Default sub-nav labels — keep in sync with `SidebarMenu` prop defaults; App uses `[0]` as initial selection. */
 export const DEFAULT_CHIEF_OF_STAFF_ITEMS = [
@@ -78,7 +90,7 @@ export interface SidebarMenuProps {
   } | null;
   /**
    * Shortcut shown on the right of "New question" on hover/focus (inline in the row).
-   * Defaults to "⇧⌘O". Pass `null` to hide it and omit `aria-keyshortcuts` on that control.
+   * Defaults to "⌘Q". Pass `null` to hide it and omit `aria-keyshortcuts` on that control.
    */
   newQuestionShortcut?: string | null;
   onNavClick?: (id: SidebarNavId) => void;
@@ -372,16 +384,11 @@ export function SidebarMenu({
   const pendingNavTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const collapsedLogoAnchorRef = useRef<HTMLDivElement>(null);
   const menuScrollRef = useRef<HTMLElement>(null);
   const [headerScrolled, setHeaderScrolled] = useState(false);
-  const collapsedLogoHoverSuppressedUntilRef = useRef(0);
-  /** When true, show collapsed-logo “open” panel affordance (mouse); keyboard uses :focus-visible in CSS. */
-  const [collapsedLogoHover, setCollapsedLogoHover] = useState(false);
   /**
-   * Parent still has `sidebarCollapsed === true`, but pointer is over `<nav className={styles.menu}>` —
-   * show full-width peek. Header/logo rail does not trigger peek.
-   * Clicking “Open sidebar” / empty menu (existing behavior) sets pinned expanded via `onToggleCollapse`.
+   * Parent still has `sidebarCollapsed === true`, but pointer is over the menu `<nav>` or the collapsed
+   * logo — show full-width peek. Clicking the logo hit-area / empty menu pins via `onToggleCollapse`.
    */
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -510,6 +517,32 @@ export function SidebarMenu({
     }
   };
 
+  useEffect(() => {
+    const onDocKeyDown = (e: KeyboardEvent) => {
+      if (isTextEditingTarget(e.target)) return;
+      if (!e.metaKey || e.altKey) return;
+
+      if (e.code === "KeyS" && !e.shiftKey && !e.repeat) {
+        e.preventDefault();
+        onToggleCollapse?.();
+        return;
+      }
+
+      if (
+        e.code === "KeyQ" &&
+        !e.shiftKey &&
+        !e.repeat &&
+        newQuestionShortcut !== null
+      ) {
+        e.preventDefault();
+        schedulePlainNavClick("new-question");
+      }
+    };
+
+    document.addEventListener("keydown", onDocKeyDown);
+    return () => document.removeEventListener("keydown", onDocKeyDown);
+  }, [newQuestionShortcut, onToggleCollapse, schedulePlainNavClick]);
+
   /**
    * Expandable nav: toggle when already active; otherwise navigate after closing any open sub-list.
    */
@@ -561,21 +594,6 @@ export function SidebarMenu({
   }, [sidebarCollapsed, collapsedHoverPeek]);
 
   useEffect(() => {
-    if (!sidebarCollapsed || collapsedHoverPeek) {
-      setCollapsedLogoHover(false);
-      return;
-    }
-    collapsedLogoHoverSuppressedUntilRef.current =
-      Date.now() + COLLAPSED_LOGO_HOVER_SUPPRESS_MS;
-    setCollapsedLogoHover(false);
-    const t = window.setTimeout(() => {
-      const el = collapsedLogoAnchorRef.current;
-      if (el?.matches(":hover")) setCollapsedLogoHover(true);
-    }, COLLAPSED_LOGO_HOVER_SUPPRESS_MS + 20);
-    return () => window.clearTimeout(t);
-  }, [sidebarCollapsed, collapsedHoverPeek]);
-
-  useEffect(() => {
     if (activeNavId !== "chief-of-staff") {
       setChiefOfStaffListOpen(false);
     }
@@ -591,14 +609,26 @@ export function SidebarMenu({
   }, [activeNavId]);
 
   const newQuestionShortcutBadge =
-    newQuestionShortcut === null ? undefined : (newQuestionShortcut ?? "⇧⌘O");
+    newQuestionShortcut === null
+      ? undefined
+      : (newQuestionShortcut ?? NEW_QUESTION_SHORTCUT_DISPLAY_DEFAULT);
 
   /** One primary selection in the menu; when a Starred/Recents chat is selected, nav + sub-nav must not show active styling. */
   const menuSelectionSuppressedByChat = selectedChat != null;
   const navRowIsActive = (id: SidebarNavId) =>
     !menuSelectionSuppressedByChat && activeNavId === id;
 
-  const collapseActionLabel = sidebarCollapsed ? "Open sidebar" : "Collapse sidebar";
+  /** Header collapse control: full width uses Collapse; hover-peek (PinIcon) uses pin copy. */
+  const collapseHeaderActionLabel = !sidebarCollapsed
+    ? "Collapse sidebar"
+    : "Pin sidebar";
+
+  const collapseHeaderShortcutDisplay = SIDEBAR_TOGGLE_SHORTCUT_DISPLAY;
+  const collapseHeaderAriaKeyShortcuts = SIDEBAR_TOGGLE_ARIA_KEYSHORTCUTS;
+
+  /** Collapse control in header (hidden on narrow rail; shown when expanded or hover-peek). */
+  const collapseHeaderIcon =
+    !sidebarCollapsed ? PanelLeftOpenIcon : PinIcon;
 
   const openMenuPeek = () => {
     if (!sidebarCollapsed) return;
@@ -615,12 +645,12 @@ export function SidebarMenu({
     }, COLLAPSED_PEEK_LEAVE_MS);
   };
 
-  /** Open peek only when pointer enters `<nav>` (hovering header / logo alone does not expand). */
+  /** Open peek when pointer enters `<nav>`; collapsed logo uses `openMenuPeek()` the same way. */
   const onMenuPeekMouseEnter = () => openMenuPeek();
 
   /**
    * Cancel a pending peek close when the pointer re-enters the sidebar (e.g. after a brief gap).
-   * Does not open peek by itself — header-only hover stays collapsed until `onMenuPeekMouseEnter`.
+   * Does not open peek by itself (logo / `<nav>` call `openMenuPeek`).
    */
   const onSidebarPeekMouseEnter = () => {
     if (!sidebarCollapsed) return;
@@ -658,13 +688,6 @@ export function SidebarMenu({
     }, 0);
   };
 
-  const onCollapsedLogoMouseEnter = () => {
-    if (Date.now() < collapsedLogoHoverSuppressedUntilRef.current) return;
-    setCollapsedLogoHover(true);
-  };
-
-  const onCollapsedLogoMouseLeave = () => setCollapsedLogoHover(false);
-
   const wrapCollapsedNavLabel = (label: string, node: ReactNode) => {
     if (!isCollapsedRail) return node;
     return (
@@ -695,6 +718,8 @@ export function SidebarMenu({
   type NavButtonOptions = {
     /** Shortcut text on the right; fades in on row hover/focus (not a floating tooltip). */
     hoverShortcut?: string;
+    /** `aria-keyshortcuts` when `hoverShortcut` is set (e.g. "Meta+Q"). */
+    hoverShortcutAria?: string;
     /** Chevron on hover (e.g. Chief of Staff, Knowledge, Wisdom). */
     hoverChevron?: boolean;
   };
@@ -705,7 +730,7 @@ export function SidebarMenu({
     icon: (active: boolean) => ReactNode,
     options: NavButtonOptions = {},
   ) => {
-    const { hoverShortcut, hoverChevron } = options;
+    const { hoverShortcut, hoverShortcutAria, hoverChevron } = options;
     const active = navRowIsActive(id);
 
     const row = (
@@ -715,8 +740,8 @@ export function SidebarMenu({
           hoverChevron ? styles.navRowWithHoverChevron : ""
         } ${hoverShortcut ? styles.navRowWithHoverShortcut : ""}`}
         onClick={() => schedulePlainNavClick(id)}
-        {...(hoverShortcut
-          ? ({ "aria-keyshortcuts": "Shift+Meta+O" } as const)
+        {...(hoverShortcut && hoverShortcutAria
+          ? ({ "aria-keyshortcuts": hoverShortcutAria } as const)
           : undefined)}
       >
         {icon(active)}
@@ -781,53 +806,34 @@ export function SidebarMenu({
               />
             </div>
             {isCollapsedRail ? (
-              <Tooltip
-                label="Open sidebar"
-                shortcut="⌘."
-                wrapperClassName={styles.collapsedLogoTooltipWrap}
+              <div
+                className={styles.logoAnchorCollapsed}
+                onMouseEnter={() => openMenuPeek()}
               >
-                <div
-                  ref={collapsedLogoAnchorRef}
-                  className={`${styles.logoAnchorCollapsed} ${
-                    collapsedLogoHover ? styles.logoAnchorCollapsedHover : ""
-                  }`.trim()}
-                  onMouseEnter={onCollapsedLogoMouseEnter}
-                  onMouseLeave={onCollapsedLogoMouseLeave}
-                >
-                  <span
-                    className={styles.collapsedSidebarCtrlIcon}
-                    aria-hidden
-                  >
-                    <HugeiconsIcon
-                      icon={PanelLeftIcon}
-                      size={20}
-                      strokeWidth={1.75}
-                      color="currentColor"
-                      aria-hidden
-                    />
-                  </span>
-                  <button
-                    type="button"
-                    className={styles.collapsedOpenHitArea}
-                    onClick={() => onToggleCollapse?.()}
-                    aria-label="Open sidebar"
-                    aria-keyshortcuts="Meta+Period"
-                  />
-                </div>
-              </Tooltip>
+                <button
+                  type="button"
+                  className={styles.collapsedOpenHitArea}
+                  onClick={() => onToggleCollapse?.()}
+                  aria-label="Open sidebar"
+                  aria-keyshortcuts={SIDEBAR_TOGGLE_ARIA_KEYSHORTCUTS}
+                />
+              </div>
             ) : null}
           </div>
           {!isCollapsedRail ? (
-            <Tooltip label={collapseActionLabel} shortcut="⌘.">
+            <Tooltip
+              label={collapseHeaderActionLabel}
+              shortcut={collapseHeaderShortcutDisplay}
+            >
               <button
                 type="button"
                 className={styles.collapseBtn}
                 onClick={() => onToggleCollapse?.()}
-                aria-label={collapseActionLabel}
-                aria-keyshortcuts="Meta+Period"
+                aria-label={collapseHeaderActionLabel}
+                aria-keyshortcuts={collapseHeaderAriaKeyShortcuts}
               >
                 <HugeiconsIcon
-                  icon={PanelLeftIcon}
+                  icon={collapseHeaderIcon}
                   size={20}
                   strokeWidth={1.75}
                   color="currentColor"
@@ -863,7 +869,10 @@ export function SidebarMenu({
             "New question",
             () => <NewQuestionIcon />,
             newQuestionShortcutBadge !== undefined
-              ? { hoverShortcut: newQuestionShortcutBadge }
+              ? {
+                  hoverShortcut: newQuestionShortcutBadge,
+                  hoverShortcutAria: NEW_QUESTION_SHORTCUT_ARIA,
+                }
               : {},
           )}
           {wrapCollapsedNavLabel(
