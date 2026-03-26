@@ -490,8 +490,8 @@
   transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
-/* Knowledge: Lottie in the same 20×20 slot; rules are scoped under `.knowledgeNavIcon` only */
-.knowledgeNavIcon .knowledgeNavLottieHost {
+/* Knowledge, Controls, Reports: Lottie in the same 20×20 slot */
+:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost {
   width: 20px;
   height: 20px;
   overflow: hidden;
@@ -500,35 +500,35 @@
   justify-content: center;
 }
 
-.knowledgeNavIcon .knowledgeNavLottieHost svg {
+:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost svg {
   width: 20px !important;
   height: 20px !important;
   display: block;
 }
 
 /*
- * Selected state: match label color on shape strokes only. A broad `svg path { stroke }` rule
- * also hit track-matte / mask paths and broke the silhouette.
- * lottie-web marks real `ty: st` / `ty: gs` paths with round caps and `fill-opacity="0"`.
+ * Selected state: match label color on shape strokes only. Avoid a broad `svg path { stroke }`
+ * rule (breaks mattes). lottie-web sets `fill-opacity="0"` on `ty: st` / `ty: gs` paths and
+ * always sets `stroke-linecap` (round *or* butt — Controls uses butt / `lc: 1`).
  */
-.knowledgeNavIcon
-  .knowledgeNavLottieHost
+:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon)
+  .navLottieHost
   svg
-  path[stroke-linecap="round"][fill-opacity="0"] {
+  path[fill-opacity="0"][stroke-linecap] {
   transition: stroke var(--nav-state-duration) var(--nav-state-ease);
 }
 
 .navRowActive
-  .knowledgeNavIcon
-  .knowledgeNavLottieHost
+  :is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon)
+  .navLottieHost
   svg
-  path[stroke-linecap="round"][fill-opacity="0"] {
+  path[fill-opacity="0"][stroke-linecap] {
   stroke: currentColor !important;
 }
 
 /* Hover/click hit the row `<button>` (same pattern as `.navIcon svg`) */
-.knowledgeNavIcon .knowledgeNavLottieHost,
-.knowledgeNavIcon .knowledgeNavLottieHost * {
+:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost,
+:is(.knowledgeNavIcon, .controlsNavIcon, .reportsNavIcon) .navLottieHost * {
   pointer-events: none;
 }
 
@@ -545,8 +545,9 @@
   transition: transform var(--nav-state-duration) var(--nav-state-ease);
 }
 
-/* Knowledge uses Lottie — keep it pixel-stable on hover (no scale) */
-.navRow:hover .navIcon:not(.knowledgeNavIcon) {
+/* Lottie nav icons — keep pixel-stable on hover (no scale) */
+.navRow:hover
+  .navIcon:not(.knowledgeNavIcon):not(.controlsNavIcon):not(.reportsNavIcon) {
   transform: scale(1.06);
 }
 

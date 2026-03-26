@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FocusEvent, MouseEvent, ReactNode } from "react";
+import type {
+  FocusEvent,
+  MouseEvent,
+  MouseEventHandler,
+  ReactNode,
+} from "react";
 import Lottie, {
   type LottieRef,
   type LottieRefCurrentProps,
@@ -166,8 +171,10 @@ function NavIcon({
   );
 }
 
-/** Knowledge row Lottie: >1 plays faster on hover (rest pose unchanged). */
+/** Nav Lottie icons: >1 plays faster on hover (rest pose unchanged). */
 const KNOWLEDGE_LOTTIE_PLAYBACK_SPEED = 1.35;
+const CONTROLS_LOTTIE_PLAYBACK_SPEED = 1.35;
+const REPORTS_LOTTIE_PLAYBACK_SPEED = 1.35;
 
 /** Shared fetch for Knowledge Lottie (Bodymovin JSON in `/public/animations/`). */
 let knowledgeLottieJsonPromise: Promise<object> | null = null;
@@ -184,10 +191,38 @@ function loadKnowledgeLottieJson(): Promise<object> {
   return knowledgeLottieJsonPromise;
 }
 
-function knowledgeLottieLastFrame(api: LottieRefCurrentProps): number {
-  /* Prefer `getDuration(true)` — it reads the live lottie instance. `animationItem` /
-   * `animationLoaded` on `lottieRef.current` can be stale because lottie-react only
-   * assigns the ref object once per mount. */
+/** Shared fetch for Controls Lottie (`/public/animations/anima_controls.json`). */
+let controlsLottieJsonPromise: Promise<object> | null = null;
+
+function loadControlsLottieJson(): Promise<object> {
+  if (!controlsLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_controls.json`;
+    controlsLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Controls animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return controlsLottieJsonPromise;
+}
+
+/** Shared fetch for Reports Lottie (`/public/animations/anima_reports.json`). */
+let reportsLottieJsonPromise: Promise<object> | null = null;
+
+function loadReportsLottieJson(): Promise<object> {
+  if (!reportsLottieJsonPromise) {
+    const base = import.meta.env.BASE_URL;
+    const url = `${base}animations/anima_reports.json`;
+    reportsLottieJsonPromise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Reports animation: ${res.status}`);
+      return res.json();
+    });
+  }
+  return reportsLottieJsonPromise;
+}
+
+/** Last composition frame (rest pose) — uses live instance via `getDuration` (lottieRef fields can be stale). */
+function navLottieLastFrame(api: LottieRefCurrentProps): number {
   const dur = api.getDuration(true);
   if (dur != null && dur > 0) {
     return Math.max(0, Math.floor(dur) - 1);
@@ -199,9 +234,9 @@ function knowledgeLottieLastFrame(api: LottieRefCurrentProps): number {
   return 0;
 }
 
-function knowledgeLottieGoToRest(api: LottieRefCurrentProps | null | undefined) {
+function navLottieGoToRest(api: LottieRefCurrentProps | null | undefined) {
   if (!api) return;
-  api.goToAndStop(knowledgeLottieLastFrame(api), true);
+  api.goToAndStop(navLottieLastFrame(api), true);
 }
 
 /**
@@ -233,14 +268,14 @@ function KnowledgeNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
           animationData={animationData}
           loop={false}
           autoplay={false}
-          className={styles.knowledgeNavLottieHost}
+          className={styles.navLottieHost}
           onDOMLoaded={() => {
             /* Avoid a one-frame flash at t=0 before the renderer settles */
             requestAnimationFrame(() => {
               const api = lottieRef.current;
               if (api) {
                 api.setSpeed(KNOWLEDGE_LOTTIE_PLAYBACK_SPEED);
-                knowledgeLottieGoToRest(api);
+                navLottieGoToRest(api);
               }
             });
           }}
@@ -248,6 +283,110 @@ function KnowledgeNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
       ) : (
         <HugeiconsIcon
           icon={BookBookmark02Icon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
+    </span>
+  );
+}
+
+/**
+ * Controls nav row icon — Lottie from `public/animations/anima_controls.json` (same hover/rest pattern as Knowledge).
+ */
+function ControlsNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadControlsLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep settings glyph fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.controlsNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.navLottieHost}
+          onDOMLoaded={() => {
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(CONTROLS_LOTTIE_PLAYBACK_SPEED);
+                navLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={Settings04Icon}
+          size={20}
+          strokeWidth={1.75}
+          color="currentColor"
+          aria-hidden
+        />
+      )}
+    </span>
+  );
+}
+
+/**
+ * Reports nav row icon — Lottie from `public/animations/anima_reports.json` (same hover/rest pattern).
+ */
+function ReportsNavIcon({ lottieRef }: { lottieRef: LottieRef }) {
+  const [animationData, setAnimationData] = useState<object | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadReportsLottieJson()
+      .then((data) => {
+        if (!cancelled) setAnimationData(data);
+      })
+      .catch(() => {
+        /* keep document attachment fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <span className={`${styles.navIcon} ${styles.reportsNavIcon}`} aria-hidden>
+      {animationData ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={false}
+          autoplay={false}
+          className={styles.navLottieHost}
+          onDOMLoaded={() => {
+            requestAnimationFrame(() => {
+              const api = lottieRef.current;
+              if (api) {
+                api.setSpeed(REPORTS_LOTTIE_PLAYBACK_SPEED);
+                navLottieGoToRest(api);
+              }
+            });
+          }}
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={DocumentAttachmentIcon}
           size={20}
           strokeWidth={1.75}
           color="currentColor"
@@ -490,6 +629,8 @@ export function SidebarMenu({
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  const controlsLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  const reportsLottieRef = useRef<LottieRefCurrentProps | null>(null);
 
   const clearPeekLeaveTimer = () => {
     if (peekLeaveTimerRef.current !== null) {
@@ -822,6 +963,9 @@ export function SidebarMenu({
     hoverShortcutAria?: string;
     /** Chevron on hover (e.g. Chief of Staff, Knowledge, Wisdom). */
     hoverChevron?: boolean;
+    /** Row-level hover (e.g. Lottie Reports icon plays from start). */
+    onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
+    onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
   };
 
   const navButton = (
@@ -830,7 +974,13 @@ export function SidebarMenu({
     icon: (active: boolean) => ReactNode,
     options: NavButtonOptions = {},
   ) => {
-    const { hoverShortcut, hoverShortcutAria, hoverChevron } = options;
+    const {
+      hoverShortcut,
+      hoverShortcutAria,
+      hoverChevron,
+      onMouseEnter,
+      onMouseLeave,
+    } = options;
     const active = navRowIsActive(id);
 
     const row = (
@@ -840,6 +990,8 @@ export function SidebarMenu({
           hoverChevron ? styles.navRowWithHoverChevron : ""
         } ${hoverShortcut ? styles.navRowWithHoverShortcut : ""}`}
         onClick={() => schedulePlainNavClick(id)}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         {...(hoverShortcut && hoverShortcutAria
           ? ({ "aria-keyshortcuts": hoverShortcutAria } as const)
           : undefined)}
@@ -1010,9 +1162,19 @@ export function SidebarMenu({
             onItemClick={onChiefOfStaffItemClick}
             keyPrefix="cos"
           />
-          {navButton("reports", "Reports", () => (
-            <NavIcon icon={DocumentAttachmentIcon} />
-          ))}
+          {navButton(
+            "reports",
+            "Reports",
+            () => <ReportsNavIcon lottieRef={reportsLottieRef} />,
+            {
+              onMouseEnter: () => {
+                reportsLottieRef.current?.goToAndPlay(0, true);
+              },
+              onMouseLeave: () => {
+                navLottieGoToRest(reportsLottieRef.current);
+              },
+            },
+          )}
           {navButton("post-meeting-insights", "Post meeting insights", () => (
             <NavIcon icon={FileViewIcon} />
           ))}
@@ -1037,7 +1199,7 @@ export function SidebarMenu({
                 knowledgeLottieRef.current?.goToAndPlay(0, true);
               }}
               onMouseLeave={() => {
-                knowledgeLottieGoToRest(knowledgeLottieRef.current);
+                navLottieGoToRest(knowledgeLottieRef.current);
               }}
             >
               <KnowledgeNavIcon lottieRef={knowledgeLottieRef} />
@@ -1070,8 +1232,14 @@ export function SidebarMenu({
                 activeNavId === "controls" ? controlsListOpen : undefined
               }
               onClick={() => handleExpandableNavClick("controls")}
+              onMouseEnter={() => {
+                controlsLottieRef.current?.goToAndPlay(0, true);
+              }}
+              onMouseLeave={() => {
+                navLottieGoToRest(controlsLottieRef.current);
+              }}
             >
-              <NavIcon icon={Settings04Icon} />
+              <ControlsNavIcon lottieRef={controlsLottieRef} />
               <span className={styles.navLabel}>Controls</span>
               <span className={styles.navChevron} aria-hidden>
                 <NavHoverChevron />
