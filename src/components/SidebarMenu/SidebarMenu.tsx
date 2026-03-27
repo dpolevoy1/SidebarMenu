@@ -25,8 +25,12 @@ import {
 import { Tooltip } from "@assemble/design-system";
 import styles from "./SidebarMenu.module.css";
 
-const DEFAULT_LOGO =
-  "https://www.figma.com/api/mcp/asset/6495e079-37c2-4aab-bb93-875b65fe45c8";
+/**
+ * Workspace logo surface recipe. Keep this tokenized so we can add more
+ * workspace-specific gradients in the same visual style.
+ */
+const DEFAULT_WORKSPACE_LOGO_GRADIENT =
+  "linear-gradient(142deg, #002462 15.15%, #1851A8 47.49%, #67A7E4 92.31%)";
 
 /**
  * After closing an expandable sub-list, we wait until its max-height + staggered row fade
@@ -748,7 +752,6 @@ function ExpandableSubNavList({
 export function SidebarMenu({
   organizationName,
   userName,
-  logoSrc = DEFAULT_LOGO,
   activeNavId = "post-meeting-insights",
   selectedChat = null,
   newQuestionShortcut,
@@ -818,6 +821,7 @@ export function SidebarMenu({
    */
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suppressAutoPeekUntilLeaveRef = useRef(false);
   const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const controlsLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const reportsLottieRef = useRef<LottieRefCurrentProps | null>(null);
@@ -1078,8 +1082,9 @@ export function SidebarMenu({
   const collapseHeaderIcon =
     !sidebarCollapsed ? PanelLeftOpenIcon : PinIcon;
 
-  const openMenuPeek = () => {
+  const openMenuPeek = (force = false) => {
     if (!sidebarCollapsed) return;
+    if (!force && suppressAutoPeekUntilLeaveRef.current) return;
     clearPeekLeaveTimer();
     setCollapsedHoverPeek(true);
   };
@@ -1093,15 +1098,13 @@ export function SidebarMenu({
     }, COLLAPSED_PEEK_LEAVE_MS);
   };
 
-  /** Peek opens from logo or when hovering real controls inside `<nav>`, not empty padding/spacer. */
-  const MENU_PEEK_INTERACTIVE_SELECTOR =
-    'button, a[href], input, textarea, select, [role="button"]';
-
-  const onNavPeekMouseOver = (e: MouseEvent<HTMLElement>) => {
+  /**
+   * Collapsed rail: hovering anywhere in the menu strip (including gaps between icons)
+   * should expand peek, not only direct icon hits.
+   */
+  const onNavPeekMouseOver = (_e: MouseEvent<HTMLElement>) => {
     if (!sidebarCollapsed) return;
-    const t = e.target;
-    if (!(t instanceof Element)) return;
-    if (t.closest(MENU_PEEK_INTERACTIVE_SELECTOR)) openMenuPeek();
+    openMenuPeek();
   };
 
   /**
@@ -1118,13 +1121,14 @@ export function SidebarMenu({
     if (!sidebarCollapsed) return;
     const next = e.relatedTarget;
     if (next instanceof Node && e.currentTarget.contains(next)) return;
+    suppressAutoPeekUntilLeaveRef.current = false;
     scheduleMenuPeekClose();
   };
 
   /** Keyboard / focus parity: peek stays while focus moves within the full sidebar (nav + header). */
   const onSidebarPeekFocusIn = () => {
     if (!sidebarCollapsed) return;
-    openMenuPeek();
+    openMenuPeek(true);
   };
 
   /**
@@ -1154,6 +1158,12 @@ export function SidebarMenu({
         {node}
       </Tooltip>
     );
+  };
+
+  const handleCollapseHeaderClick = () => {
+    // Avoid immediate re-open when collapsing while pointer stays inside sidebar.
+    if (!sidebarCollapsed) suppressAutoPeekUntilLeaveRef.current = true;
+    onToggleCollapse?.();
   };
 
   type NavButtonOptions = {
@@ -1241,6 +1251,7 @@ export function SidebarMenu({
         className={`${styles.header} ${
           headerScrolled ? styles.headerScrolled : ""
         }`.trim()}
+        onMouseEnter={isCollapsedRail ? () => openMenuPeek() : undefined}
       >
         <div className={styles.logoRow}>
           <div
@@ -1248,14 +1259,43 @@ export function SidebarMenu({
               isCollapsedRail ? styles.logoColumnCollapsed : ""
             }`.trim()}
           >
-            <div className={styles.logo}>
-              <img
-                src={logoSrc}
-                alt=""
-                width={40}
-                height={40}
-                decoding="async"
-              />
+            <div className={styles.logo} aria-hidden>
+              <div
+                className={styles.logoMark}
+                style={
+                  {
+                    "--workspace-logo-gradient": DEFAULT_WORKSPACE_LOGO_GRADIENT,
+                  } as React.CSSProperties
+                }
+              >
+                <svg
+                  className={styles.logoGlyph}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={20}
+                  height={18}
+                  viewBox="0 0 20 18"
+                  fill="none"
+                >
+                  <path
+                    d="M10.4997 0.000291557C11.1738 -0.0116809 11.83 0.34557 12.1683 0.980736L19.783 15.2831C20.2629 16.1845 19.9201 17.3038 19.0177 17.7832C18.115 18.2625 16.9939 17.9205 16.514 17.019L10.4993 5.72168L8.67127 9.15609C8.13043 9.0056 7.61352 8.77942 7.14415 8.47712C6.56419 8.10356 6.04573 7.60721 5.63742 6.9803L8.83124 0.981176C9.1694 0.346007 9.82576 -0.0115039 10.4997 0.000291557Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M2.8673 12.1814C3.37172 12.6156 3.91347 12.9994 4.4855 13.3301C4.98772 13.6205 5.51185 13.8688 6.05069 14.0772L4.4855 17.0185C4.0055 17.9197 2.88474 18.2619 1.98229 17.7828C1.07976 17.3035 0.737192 16.1841 1.21691 15.2827L2.8673 12.1814Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M1.66745 2.00638C2.66545 1.92016 3.53998 2.71805 3.62059 3.78824C3.99076 8.7042 8.00995 10.7345 11.4442 9.94731L13.2043 13.4972C7.64239 15.3248 0.612992 12.1654 0.00594868 4.1007C-0.0744437 3.03045 0.6694 2.09275 1.66745 2.00638Z"
+                    fill="white"
+                    fillOpacity={0.7}
+                  />
+                  <path
+                    d="M18.3264 2.00592C19.3246 2.08867 20.0715 3.02372 19.9946 4.09422C19.8099 6.66035 18.9851 8.72537 17.7689 10.2926L15.7918 6.30548C16.1049 5.57341 16.3113 4.73621 16.379 3.79471C16.4562 2.72422 17.3281 1.92336 18.3264 2.00592Z"
+                    fill="white"
+                    fillOpacity={0.7}
+                  />
+                </svg>
+              </div>
             </div>
             {isCollapsedRail ? (
               <div
@@ -1265,7 +1305,10 @@ export function SidebarMenu({
                 <button
                   type="button"
                   className={styles.collapsedOpenHitArea}
-                  onClick={() => onToggleCollapse?.()}
+                  onClick={() => {
+                    suppressAutoPeekUntilLeaveRef.current = false;
+                    onToggleCollapse?.();
+                  }}
                   aria-label="Open sidebar"
                   aria-keyshortcuts={SIDEBAR_TOGGLE_ARIA_KEYSHORTCUTS}
                 />
@@ -1280,7 +1323,7 @@ export function SidebarMenu({
               <button
                 type="button"
                 className={styles.collapseBtn}
-                onClick={() => onToggleCollapse?.()}
+                onClick={handleCollapseHeaderClick}
                 aria-label={collapseHeaderActionLabel}
                 aria-keyshortcuts={collapseHeaderAriaKeyShortcuts}
               >
