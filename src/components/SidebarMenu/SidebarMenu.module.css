@@ -428,15 +428,32 @@
 }
 
 .workspaceMenuProfile {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 8px;
+  padding: 8px;
   border-bottom: 1px solid
     var(
       --Neutral-400---List-outline,
       var(--color-neutral-400-list-outline, #efefef)
     );
+}
+
+.workspaceMenuProfileRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-secondary-600);
+  text-align: left;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.14px;
 }
 
 .workspaceMenuProfileAvatar {
@@ -551,6 +568,7 @@
 
 .workspaceMenuItemLabel {
   flex: 1 1 auto;
+  width: fit-content;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -808,19 +826,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  min-height: 30px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 8px;
   margin: 0;
-  border: 1px solid var(--color-neutral-300);
+  border: 1px solid
+    var(
+      --Neutral-400---List-outline,
+      var(--color-neutral-400-list-outline, #efefef)
+    );
   border-radius: 8px;
-  background: var(--color-primary-200);
-  color: var(--color-secondary-600);
+  background: var(--color-neutral-white, #fff);
+  color: var(--Neutral-700, #030816);
   font-family: Inter, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 0.12px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.14px;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
@@ -829,8 +855,15 @@
 }
 
 .workspaceMenuSignOut:hover {
-  background: var(--sidebar-hover-bg);
-  color: var(--color-secondary-700);
+  background: var(--color-primary-100);
+  border-color: var(--Secondary-300, #C5CED9);
+  color: var(--Neutral-700, #030816);
+}
+
+.workspaceMenuSignOut:active {
+  background: var(--color-primary-200);
+  border-color: var(--Secondary-300, #C5CED9);
+  color: var(--Neutral-700, #030816);
 }
 
 .workspaceMenuSignOut:focus-visible {

@@ -22,23 +22,51 @@ body {
 }
 
 :root {
-  --theme-transition-duration: 240ms;
+  --theme-transition-duration: 220ms;
   --theme-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-:root[data-theme-transition="true"] *,
-:root[data-theme-transition="true"] *::before,
-:root[data-theme-transition="true"] *::after {
+:root[data-theme-transition="true"] :where(
+  body,
+  .sidebar,
+  .header,
+  .menu,
+  .logoMark,
+  .orgNameRow,
+  .orgName,
+  .orgNameChevron,
+  .userName,
+  .collapseBtn,
+  .sectionLabel,
+  .sectionHeadline,
+  .navRow,
+  .chatRow,
+  .contentViewport,
+  .workspaceMenuPopover,
+  .workspaceMenuProfile,
+  .workspaceMenuProfileName,
+  .workspaceMenuProfileEmail,
+  .workspaceMenuSectionLabel,
+  .workspaceMenuItem,
+  .workspaceMenuSeparator,
+  .workspaceMenuSignOut,
+  .workspaceMenuShortcutBadge,
+  .workspaceToggleIndicator,
+  .workspaceRadioIndicator
+) {
   transition:
     background-color var(--theme-transition-duration) var(--theme-transition-ease),
     color var(--theme-transition-duration) var(--theme-transition-ease),
     border-color var(--theme-transition-duration) var(--theme-transition-ease),
     outline-color var(--theme-transition-duration) var(--theme-transition-ease),
-    text-decoration-color var(--theme-transition-duration)
-      var(--theme-transition-ease),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-ease);
+}
+
+:root[data-theme-transition="true"] :where(svg, svg *, path) {
+  transition:
     fill var(--theme-transition-duration) var(--theme-transition-ease),
     stroke var(--theme-transition-duration) var(--theme-transition-ease),
-    box-shadow var(--theme-transition-duration) var(--theme-transition-ease) !important;
+    color var(--theme-transition-duration) var(--theme-transition-ease);
 }
 
 :root[data-theme="dark"] {
@@ -64,9 +92,37 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-theme-transition="true"] *,
-  :root[data-theme-transition="true"] *::before,
-  :root[data-theme-transition="true"] *::after {
+  :root[data-theme-transition="true"] :where(
+    body,
+    .sidebar,
+    .header,
+    .menu,
+    .logoMark,
+    .orgNameRow,
+    .orgName,
+    .orgNameChevron,
+    .userName,
+    .collapseBtn,
+    .sectionLabel,
+    .sectionHeadline,
+    .navRow,
+    .chatRow,
+    .contentViewport,
+    .workspaceMenuPopover,
+    .workspaceMenuProfile,
+    .workspaceMenuProfileName,
+    .workspaceMenuProfileEmail,
+    .workspaceMenuSectionLabel,
+    .workspaceMenuItem,
+    .workspaceMenuSeparator,
+    .workspaceMenuSignOut,
+    .workspaceMenuShortcutBadge,
+    .workspaceToggleIndicator,
+    .workspaceRadioIndicator,
+    svg,
+    svg *,
+    path
+  ) {
     transition: none !important;
   }
 }

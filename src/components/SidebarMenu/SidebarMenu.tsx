@@ -1675,24 +1675,26 @@ export function SidebarMenu({
                   aria-label="Workspace menu"
                 >
                   <div className={styles.workspaceMenuProfile}>
-                    {workspaceProfileAvatarUnavailable ? (
-                      <div className={styles.workspaceMenuProfileAvatarFallback} aria-hidden>
-                        {workspaceFirstNameInitial}
+                    <div className={styles.workspaceMenuProfileRow}>
+                      {workspaceProfileAvatarUnavailable ? (
+                        <div className={styles.workspaceMenuProfileAvatarFallback} aria-hidden>
+                          {workspaceFirstNameInitial}
+                        </div>
+                      ) : (
+                        <img
+                          className={styles.workspaceMenuProfileAvatar}
+                          src={WORKSPACE_DROPDOWN_PROFILE_AVATAR_URL}
+                          alt=""
+                          loading="lazy"
+                          onError={() => setWorkspaceProfileAvatarUnavailable(true)}
+                        />
+                      )}
+                      <div className={styles.workspaceMenuProfileMeta}>
+                        <p className={styles.workspaceMenuProfileName}>{userName}</p>
+                        <p className={styles.workspaceMenuProfileEmail}>
+                          {WORKSPACE_DROPDOWN_PROFILE_EMAIL}
+                        </p>
                       </div>
-                    ) : (
-                      <img
-                        className={styles.workspaceMenuProfileAvatar}
-                        src={WORKSPACE_DROPDOWN_PROFILE_AVATAR_URL}
-                        alt=""
-                        loading="lazy"
-                        onError={() => setWorkspaceProfileAvatarUnavailable(true)}
-                      />
-                    )}
-                    <div className={styles.workspaceMenuProfileMeta}>
-                      <p className={styles.workspaceMenuProfileName}>{userName}</p>
-                      <p className={styles.workspaceMenuProfileEmail}>
-                        {WORKSPACE_DROPDOWN_PROFILE_EMAIL}
-                      </p>
                     </div>
                   </div>
                   <div className={styles.workspaceMenuBody}>
@@ -1771,12 +1773,12 @@ export function SidebarMenu({
                     >
                       <HugeiconsIcon
                         icon={PanelLeftOpenIcon}
-                        size={16}
-                        strokeWidth={1.9}
+                        size={20}
+                        strokeWidth={1.75}
                         color="currentColor"
                         aria-hidden
                       />
-                      <span>Sign out</span>
+                      <span className={styles.workspaceMenuItemLabel}>Sign out</span>
                     </button>
                   </div>
                 </div>

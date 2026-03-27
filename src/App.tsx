@@ -39,7 +39,7 @@ const INITIAL_STARRED_IDS = [
   "chat-crm-mau",
   "chat-dove-daily",
 ];
-const THEME_TRANSITION_MS = 240;
+const THEME_TRANSITION_MS = 220;
 
 export default function App() {
   const hasMountedRef = useRef(false);
@@ -80,15 +80,20 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
+    const nextTheme = darkModeEnabled ? "dark" : "light";
+
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
+      root.setAttribute("data-theme", nextTheme);
       return;
     }
     root.setAttribute("data-theme-transition", "true");
-    const timer = window.setTimeout(() => {
-      root.removeAttribute("data-theme-transition");
-    }, THEME_TRANSITION_MS);
+    root.setAttribute("data-theme", nextTheme);
+
+    const timer = window.setTimeout(
+      () => root.removeAttribute("data-theme-transition"),
+      THEME_TRANSITION_MS,
+    );
     return () => {
       window.clearTimeout(timer);
       root.removeAttribute("data-theme-transition");
