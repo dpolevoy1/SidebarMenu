@@ -22,7 +22,7 @@ import {
   Settings04Icon,
   StarIcon,
 } from "@hugeicons/core-free-icons";
-import { Tooltip } from "../Tooltip";
+import { Tooltip } from "@assemble/design-system";
 import styles from "./SidebarMenu.module.css";
 
 const DEFAULT_LOGO =
