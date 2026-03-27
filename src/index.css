@@ -40,13 +40,45 @@ body {
   margin-top: 16px;
   margin-right: 16px;
   margin-bottom: 16px;
+  position: relative;
+  isolation: isolate;
   border-radius: 24px;
   background: var(--Neutral-100, #fff);
   box-shadow:
-    0 1px 2px color-mix(in srgb, var(--color-secondary-700) 6%, transparent),
-    0 6px 18px color-mix(in srgb, var(--color-secondary-700) 7%, transparent);
+    0 1px 2px color-mix(in srgb, var(--color-secondary-700) 4%, transparent),
+    0 5px 14px color-mix(in srgb, var(--color-secondary-700) 5%, transparent);
   transition: box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   overflow: auto;
+}
+
+.contentViewport::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: calc(100% - 12px);
+  height: 380px;
+  border-radius: 18px 18px 0 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      110% 92% at 14% 0%,
+      color-mix(in srgb, var(--Primary-200, #f7f9ff) 76%, #fff) 0%,
+      color-mix(in srgb, var(--Primary-200, #f7f9ff) 46%, transparent) 48%,
+      transparent 72%
+    ),
+    radial-gradient(
+      96% 80% at 60% -8%,
+      color-mix(in srgb, var(--Primary-200, #f7f9ff) 58%, #fff) 0%,
+      color-mix(in srgb, var(--Primary-200, #f7f9ff) 30%, transparent) 58%,
+      transparent 84%
+    );
+}
+
+.contentViewport > * {
+  position: relative;
+  z-index: 1;
 }
 
 .contentViewport:hover {
