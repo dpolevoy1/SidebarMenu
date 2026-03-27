@@ -12,6 +12,7 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 
 - **Expanded width** (~300px) with org headline, user block, and full labels.
 - **Collapsed rail** (~68px): icon-first nav; section titles and nav chevrons/labels hide per CSS.
+- **Workspace switcher trigger:** In expanded mode, the workspace name row (name + chevron) is a clickable control (`button`) intended to open a workspace dropdown.
 - **Hover peek:** While collapsed, hovering the **logo** or an **interactive nav control** (button, link, etc.) temporarily expands the sidebar to full width. Empty padding and the bottom spacer do **not** trigger peek (parent still treats it as “collapsed” until you pin).
 - **Pin:** Use the header control during peek, **click the logo hit-area**, or **⌘S** to keep the sidebar fully expanded.
 - **Header collapse/Pin** uses contextual icons (e.g. open panel, pin) and tooltips (“Collapse sidebar,” “Pin sidebar”) with **⌘S** where applicable.
@@ -105,6 +106,7 @@ Public API for the sidebar is exported from `src/components/SidebarMenu/index.ts
 - Pass **`starredChatIds`**, **`recentChats`**, **`selectedChat`**, **`onChatClick`**, **`onToggleRecentStar`**, **`onRemoveStarredChat`** to drive chat lists from your app.
 - **`onToggleCollapse`** + **`sidebarCollapsed`** control pinned expanded vs rail.
 - **`newQuestionShortcut`**: override label text, or `null` to hide the shortcut badge and disable **⌘Q** handling from the menu component.
+- **`onWorkspaceNameClick`**: callback for clicking the workspace name row (reserved for opening workspace dropdown/switcher UI).
 
 ---
 
