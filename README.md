@@ -21,7 +21,7 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 ### Collapse / expand animations
 
 - **Nav labels** fade out via `opacity` + `max-width` transition (no snap) when collapsing.
-- **Workspace menu labels** now use content-based width (`fit-content`) so item text (for example, “Sign out”) sizes to its content instead of a fixed label width.
+- **Workspace menu labels** truncate correctly in flex rows (`min-width: 0` + ellipsis), preventing long workspace names from overflowing.
 - **Section titles** (Actions, Intelligence, Starred, Recents) disappear instantly on collapse to prevent layout shift; fade in smoothly on expand.
 - **Icons & New Question** slide in from −12 px above with a fade (`opacity 0 → 1`) on collapse: 0.4 s duration, `cubic-bezier(0.5, 0, 0, 1)`.
 - **Staggered entrance:** each icon animates in sequence with a 0.1 s offset, base delay 0.2 s — New Question first, Wisdom last. Controlled via `--icon-index` CSS custom property on each nav row.

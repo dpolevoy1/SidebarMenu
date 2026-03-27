@@ -335,28 +335,28 @@
   transition: transform var(--nav-state-duration) var(--nav-state-ease);
 }
 
-.header:hover .orgName,
-.header:hover .orgNameChevron {
+.orgNameRow:hover .orgName,
+.orgNameRow:hover .orgNameChevron {
   color: var(--color-secondary-700);
 }
 
-.header:hover .orgNameRow[aria-expanded="true"] .orgName,
-.header:hover .orgNameRow[aria-expanded="true"] .orgNameChevron {
+.orgNameRow:hover[aria-expanded="true"] .orgName,
+.orgNameRow:hover[aria-expanded="true"] .orgNameChevron {
   color: var(--color-primary-600);
 }
 
-.header:has(:focus-visible) .orgName,
-.header:has(:focus-visible) .orgNameChevron {
+.orgNameRow:focus-visible .orgName,
+.orgNameRow:focus-visible .orgNameChevron {
   color: var(--color-primary-600);
 }
 
-.header:hover .orgNameChevron,
-.header:has(:focus-visible) .orgNameChevron {
+.orgNameRow:hover .orgNameChevron,
+.orgNameRow:focus-visible .orgNameChevron {
   opacity: 1;
 }
 
-.header:hover .orgNameChevron svg,
-.header:has(:focus-visible) .orgNameChevron svg {
+.orgNameRow:hover .orgNameChevron svg,
+.orgNameRow:focus-visible .orgNameChevron svg {
   transform: scale(1.08);
 }
 
@@ -1696,8 +1696,8 @@
     transition: none;
   }
 
-  .header:hover .orgNameChevron svg,
-  .header:has(:focus-visible) .orgNameChevron svg {
+  .orgNameRow:hover .orgNameChevron svg,
+  .orgNameRow:focus-visible .orgNameChevron svg {
     transform: none;
   }
 
