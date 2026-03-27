@@ -1065,20 +1065,29 @@ export function SidebarMenu({
 
   useEffect(() => {
     if (sidebarCollapsed && !collapsedHoverPeek) {
-      // Save whichever sub-nav is currently open before closing them all.
+      // Rail state: save whichever sub-nav is currently open, then close all.
+      // Re-evaluates on every rail entry (including returning from hover-peek) so
+      // the ref always reflects the last known open sub-nav.
       if (chiefOfStaffListOpenRef.current) subNavToRestoreRef.current = "chief-of-staff";
       else if (knowledgeListOpenRef.current) subNavToRestoreRef.current = "knowledge";
       else if (controlsListOpenRef.current) subNavToRestoreRef.current = "controls";
       else if (wisdomListOpenRef.current) subNavToRestoreRef.current = "wisdom";
-      else subNavToRestoreRef.current = null;
+      // If nothing is open we keep the existing ref so a prior save is not lost.
 
       clearPendingNavTimeout();
       setChiefOfStaffListOpen(false);
       setKnowledgeListOpen(false);
       setControlsListOpen(false);
       setWisdomListOpen(false);
+    } else if (sidebarCollapsed && collapsedHoverPeek) {
+      // Hover-peek: show the sub-nav that was open before collapsing.
+      const id = subNavToRestoreRef.current;
+      if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
+      else if (id === "knowledge") setKnowledgeListOpen(true);
+      else if (id === "controls") setControlsListOpen(true);
+      else if (id === "wisdom") setWisdomListOpen(true);
     } else if (!sidebarCollapsed) {
-      // Restore the sub-nav that was open at collapse time.
+      // Fully pinned / expanded: restore sub-nav and clear the saved ref.
       const id = subNavToRestoreRef.current;
       if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
       else if (id === "knowledge") setKnowledgeListOpen(true);
