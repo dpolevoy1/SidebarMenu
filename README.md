@@ -12,6 +12,7 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 
 - **Expanded width** (~300px) with org headline, user block, and full labels.
 - **Collapsed rail** (~68px): icon-first nav; section titles and nav chevrons/labels hide per CSS.
+- **Main content viewport:** A flexible, scrollable surface sits to the right of the sidebar (`.contentViewport`) with 16 px top/right/bottom spacing, 24 px corner radius, and a soft shadow that subtly elevates on hover.
 - **Workspace switcher trigger:** In expanded mode, the workspace name row (name + chevron) is a clickable control (`button`) intended to open a workspace dropdown.
 - **Hover peek:** While collapsed, hovering the **logo** or an **interactive nav control** (button, link, etc.) temporarily expands the sidebar to full width. Empty padding and the bottom spacer do **not** trigger peek (parent still treats it as “collapsed” until you pin).
 - **Pin:** Use the header control during peek, **click the logo hit-area**, or **⌘S** to keep the sidebar fully expanded.
