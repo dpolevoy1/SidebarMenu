@@ -95,6 +95,7 @@ export interface SidebarMenuProps {
   organizationName: string;
   userName: string;
   logoSrc?: string;
+  onWorkspaceNameClick?: () => void;
   activeNavId?: SidebarNavId;
   /** Highlights a Starred / Recents row when set (`chatId` is stable; `section` disambiguates same id if ever reused). */
   selectedChat?: {
@@ -752,6 +753,7 @@ function ExpandableSubNavList({
 export function SidebarMenu({
   organizationName,
   userName,
+  onWorkspaceNameClick,
   activeNavId = "post-meeting-insights",
   selectedChat = null,
   newQuestionShortcut,
@@ -1406,12 +1408,17 @@ export function SidebarMenu({
         </div>
         {!isCollapsedRail ? (
           <div className={styles.headline}>
-            <div className={styles.orgNameRow}>
+            <button
+              type="button"
+              className={styles.orgNameRow}
+              onClick={onWorkspaceNameClick}
+              aria-label="Open workspace switcher"
+            >
               <p className={styles.orgName}>{organizationName}</p>
               <span className={styles.orgNameChevron} aria-hidden>
                 <WorkspaceSwitcherChevron />
               </span>
-            </div>
+            </button>
             <p className={styles.userName}>{userName}</p>
           </div>
         ) : null}

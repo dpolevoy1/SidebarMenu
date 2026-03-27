@@ -259,10 +259,28 @@
 .orgNameRow {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   width: 100%;
   min-width: 0;
-  transition: all var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  border-radius: 6px;
+  transition:
+    background var(--nav-state-duration) var(--nav-state-ease),
+    color var(--nav-state-duration) var(--nav-state-ease),
+    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+}
+
+.orgNameRow:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
 }
 
 .orgName {
@@ -291,12 +309,22 @@
   pointer-events: none;
   transform-origin: center center;
   transition: opacity var(--nav-state-duration) var(--nav-state-ease);
-  color: var(--color-secondary-700);
+  color: var(--color-secondary-600);
 }
 
 .orgNameChevron svg {
   pointer-events: none;
   transition: transform var(--nav-state-duration) var(--nav-state-ease);
+}
+
+.header:hover .orgName,
+.header:hover .orgNameChevron {
+  color: var(--color-secondary-700);
+}
+
+.header:has(:focus-visible) .orgName,
+.header:has(:focus-visible) .orgNameChevron {
+  color: var(--color-primary-600);
 }
 
 .header:hover .orgNameChevron,
@@ -774,6 +802,13 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  color: #fff;
+}
+
+.newQuestionPlus svg,
+.newQuestionPlus svg * {
+  color: #fff !important;
+  stroke: #fff !important;
 }
 
 .chatRow {
