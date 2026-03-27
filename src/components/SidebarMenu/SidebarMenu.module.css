@@ -1064,9 +1064,10 @@
  */
 .sidebarCollapsed .navIcon,
 .sidebarCollapsed .newQuestionIcon {
+  --_delay: calc(0.2s + var(--icon-index, 0) * 0.1s);
   animation:
-    sidebarIconFadeIn       0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s both,
-    sidebarIconSlideFromTop 0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s backwards;
+    sidebarIconFadeIn       0.4s cubic-bezier(0.5, 0, 0, 1) var(--_delay) both,
+    sidebarIconSlideFromTop 0.4s cubic-bezier(0.5, 0, 0, 1) var(--_delay) backwards;
 }
 
 /*
@@ -1075,7 +1076,8 @@
  * below must exclude .navRowActive.
  */
 .sidebarCollapsed .navRowActive {
-  animation: sidebarActiveBgFadeIn 0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s both;
+  --_delay: calc(0.2s + var(--icon-index, 0) * 0.1s);
+  animation: sidebarActiveBgFadeIn 0.4s cubic-bezier(0.5, 0, 0, 1) var(--_delay) both;
 }
 
 .sidebarRailAnimating:not(.sidebarCollapsed) .navRowActive {

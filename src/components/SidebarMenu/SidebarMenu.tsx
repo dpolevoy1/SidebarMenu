@@ -1190,6 +1190,8 @@ export function SidebarMenu({
     /** Row-level hover (e.g. Lottie Reports icon plays from start). */
     onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
     onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
+    /** Position in the collapsed rail stagger sequence (0-based). Controls animation delay. */
+    staggerIndex?: number;
   };
 
   const navButton = (
@@ -1204,6 +1206,7 @@ export function SidebarMenu({
       hoverChevron,
       onMouseEnter,
       onMouseLeave,
+      staggerIndex = 0,
     } = options;
     const active = navRowIsActive(id);
 
@@ -1213,6 +1216,7 @@ export function SidebarMenu({
         className={`${styles.navRow} ${active ? styles.navRowActive : ""} ${
           hoverChevron ? styles.navRowWithHoverChevron : ""
         } ${hoverShortcut ? styles.navRowWithHoverShortcut : ""}`}
+        style={{ "--icon-index": staggerIndex } as React.CSSProperties}
         onClick={() => schedulePlainNavClick(id)}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -1380,8 +1384,9 @@ export function SidebarMenu({
               ? {
                   hoverShortcut: newQuestionShortcutBadge,
                   hoverShortcutAria: NEW_QUESTION_SHORTCUT_ARIA,
+                  staggerIndex: 0,
                 }
-              : {},
+              : { staggerIndex: 0 },
           )}
           {wrapCollapsedNavLabel(
             "Chief of Staff",
@@ -1392,6 +1397,7 @@ export function SidebarMenu({
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 chiefOfStaffListOpen ? styles.navRowSubNavExpanded : ""
               }`}
+              style={{ "--icon-index": 1 } as React.CSSProperties}
               aria-expanded={
                 activeNavId === "chief-of-staff"
                   ? chiefOfStaffListOpen
@@ -1429,6 +1435,7 @@ export function SidebarMenu({
             "Reports",
             () => <ReportsNavIcon lottieRef={reportsLottieRef} />,
             {
+              staggerIndex: 2,
               onMouseEnter: () => {
                 reportsLottieRef.current?.goToAndPlay(0, true);
               },
@@ -1442,6 +1449,7 @@ export function SidebarMenu({
             "Post meeting insights",
             () => <InsightsNavIcon lottieRef={insightsLottieRef} />,
             {
+              staggerIndex: 3,
               onMouseEnter: () => {
                 insightsLottieRef.current?.goToAndPlay(0, true);
               },
@@ -1463,6 +1471,7 @@ export function SidebarMenu({
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 knowledgeListOpen ? styles.navRowSubNavExpanded : ""
               }`}
+              style={{ "--icon-index": 4 } as React.CSSProperties}
               aria-expanded={
                 activeNavId === "knowledge" ? knowledgeListOpen : undefined
               }
@@ -1500,6 +1509,7 @@ export function SidebarMenu({
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 controlsListOpen ? styles.navRowSubNavExpanded : ""
               }`}
+              style={{ "--icon-index": 5 } as React.CSSProperties}
               aria-expanded={
                 activeNavId === "controls" ? controlsListOpen : undefined
               }
@@ -1537,6 +1547,7 @@ export function SidebarMenu({
               } ${styles.navRowWithHoverChevron} ${styles.navRowExpandableSubNav} ${
                 wisdomListOpen ? styles.navRowSubNavExpanded : ""
               }`}
+              style={{ "--icon-index": 6 } as React.CSSProperties}
               aria-expanded={
                 activeNavId === "wisdom" ? wisdomListOpen : undefined
               }
