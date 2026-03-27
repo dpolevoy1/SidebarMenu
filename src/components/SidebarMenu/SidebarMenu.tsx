@@ -1138,6 +1138,12 @@ export function SidebarMenu({
     if (!sidebarCollapsed) return;
     if (!force && suppressAutoPeekUntilLeaveRef.current) return;
     clearPeekLeaveTimer();
+    // Restore the saved sub-nav in the same batch so it appears already open on first peek render.
+    const id = subNavToRestoreRef.current;
+    if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
+    else if (id === "knowledge") setKnowledgeListOpen(true);
+    else if (id === "controls") setControlsListOpen(true);
+    else if (id === "wisdom") setWisdomListOpen(true);
     setCollapsedHoverPeek(true);
   };
 
