@@ -279,6 +279,7 @@
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
     color var(--nav-state-duration) var(--nav-state-ease),
+    box-shadow var(--nav-state-duration) var(--nav-state-ease),
     transform var(--sidebar-rail-duration) var(--sidebar-rail-ease),
     opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
@@ -286,6 +287,10 @@
 .orgNameRow:focus-visible {
   outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
+}
+
+.orgNameRow:active {
+  transform: translateY(1px);
 }
 
 .orgNameRow[aria-expanded="true"] .orgNameChevron {
@@ -541,12 +546,17 @@
   letter-spacing: 0.14px;
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
-    color var(--nav-state-duration) var(--nav-state-ease);
+    color var(--nav-state-duration) var(--nav-state-ease),
+    transform var(--nav-state-duration) var(--nav-state-ease);
 }
 
 .workspaceMenuItem:hover {
   background: var(--sidebar-hover-bg);
   color: var(--color-secondary-700);
+}
+
+.workspaceMenuItem:active {
+  transform: translateY(1px);
 }
 
 .workspaceMenuItem[aria-checked="true"],
@@ -850,7 +860,8 @@
   transition:
     background var(--nav-state-duration) var(--nav-state-ease),
     color var(--nav-state-duration) var(--nav-state-ease),
-    border-color var(--nav-state-duration) var(--nav-state-ease);
+    border-color var(--nav-state-duration) var(--nav-state-ease),
+    transform var(--nav-state-duration) var(--nav-state-ease);
 }
 
 .workspaceMenuSignOut:hover {
@@ -863,6 +874,7 @@
   background: var(--color-primary-200);
   border-color: var(--Secondary-300, #C5CED9);
   color: var(--Neutral-700, #030816);
+  transform: translateY(1px);
 }
 
 .workspaceMenuSignOut:focus-visible {
@@ -1659,6 +1671,9 @@
   .navRow,
   .chatRow,
   .collapseBtn,
+  .orgNameRow,
+  .workspaceMenuItem,
+  .workspaceMenuSignOut,
   .sectionHeadline,
   .navChevron,
   .sectionHeadChevron,
