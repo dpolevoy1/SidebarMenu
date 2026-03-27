@@ -77,7 +77,7 @@ export default function App() {
 
   return (
     <>
-      <div style={{ display: "flex", height: "100vh" }}>
+      <div className="appLayout">
         <SidebarMenu
           organizationName="Unilever"
           userName="Maximilian Metti"
@@ -161,6 +161,9 @@ export default function App() {
             );
           }}
         />
+        <main className="contentShell">
+          <section className="contentViewport" aria-label="Main content area" />
+        </main>
       </div>
       <Agentation endpoint="http://localhost:4747" />
     </>
