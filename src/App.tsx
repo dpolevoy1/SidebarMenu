@@ -88,22 +88,22 @@ export default function App() {
             setSelectedChat(null);
             setActiveNavId(id);
             if (id === "chief-of-staff") {
-              setSelectedChiefOfStaffItem(DEFAULT_CHIEF_OF_STAFF_ITEMS[0]!);
+              if (id !== activeNavId) setSelectedChiefOfStaffItem(DEFAULT_CHIEF_OF_STAFF_ITEMS[0]!);
             } else {
               setSelectedChiefOfStaffItem(null);
             }
             if (id === "knowledge") {
-              setSelectedKnowledgeItem(DEFAULT_KNOWLEDGE_ITEMS[0]!);
+              if (id !== activeNavId) setSelectedKnowledgeItem(DEFAULT_KNOWLEDGE_ITEMS[0]!);
             } else {
               setSelectedKnowledgeItem(null);
             }
             if (id === "controls") {
-              setSelectedControlsItem(DEFAULT_CONTROLS_ITEMS[0]!);
+              if (id !== activeNavId) setSelectedControlsItem(DEFAULT_CONTROLS_ITEMS[0]!);
             } else {
               setSelectedControlsItem(null);
             }
             if (id === "wisdom") {
-              setSelectedWisdomItem(DEFAULT_WISDOM_ITEMS[0]!);
+              if (id !== activeNavId) setSelectedWisdomItem(DEFAULT_WISDOM_ITEMS[0]!);
             } else {
               setSelectedWisdomItem(null);
             }

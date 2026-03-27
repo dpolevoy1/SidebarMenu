@@ -830,6 +830,14 @@ export function SidebarMenu({
   const insightsLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const wisdomLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const chiefOfStaffLottieRef = useRef<LottieRefCurrentProps | null>(null);
+  // Stores which expandable sub-nav was open at the moment of collapse, so it can be
+  // restored when the sidebar is expanded again. null = nothing to restore.
+  const subNavToRestoreRef = useRef<SidebarNavId | null>(null);
+  // Ref mirrors for the list-open states — read inside effects without adding to deps.
+  const chiefOfStaffListOpenRef = useRef(false);
+  const knowledgeListOpenRef = useRef(false);
+  const controlsListOpenRef = useRef(false);
+  const wisdomListOpenRef = useRef(false);
 
   const clearPeekLeaveTimer = () => {
     if (peekLeaveTimerRef.current !== null) {
@@ -1049,13 +1057,34 @@ export function SidebarMenu({
     };
   }, []);
 
+  // Keep ref mirrors in sync so the collapse/expand effect can read them without deps.
+  useEffect(() => { chiefOfStaffListOpenRef.current = chiefOfStaffListOpen; });
+  useEffect(() => { knowledgeListOpenRef.current = knowledgeListOpen; });
+  useEffect(() => { controlsListOpenRef.current = controlsListOpen; });
+  useEffect(() => { wisdomListOpenRef.current = wisdomListOpen; });
+
   useEffect(() => {
     if (sidebarCollapsed && !collapsedHoverPeek) {
+      // Save whichever sub-nav is currently open before closing them all.
+      if (chiefOfStaffListOpenRef.current) subNavToRestoreRef.current = "chief-of-staff";
+      else if (knowledgeListOpenRef.current) subNavToRestoreRef.current = "knowledge";
+      else if (controlsListOpenRef.current) subNavToRestoreRef.current = "controls";
+      else if (wisdomListOpenRef.current) subNavToRestoreRef.current = "wisdom";
+      else subNavToRestoreRef.current = null;
+
       clearPendingNavTimeout();
       setChiefOfStaffListOpen(false);
       setKnowledgeListOpen(false);
       setControlsListOpen(false);
       setWisdomListOpen(false);
+    } else if (!sidebarCollapsed) {
+      // Restore the sub-nav that was open at collapse time.
+      const id = subNavToRestoreRef.current;
+      if (id === "chief-of-staff") setChiefOfStaffListOpen(true);
+      else if (id === "knowledge") setKnowledgeListOpen(true);
+      else if (id === "controls") setControlsListOpen(true);
+      else if (id === "wisdom") setWisdomListOpen(true);
+      subNavToRestoreRef.current = null;
     }
   }, [sidebarCollapsed, collapsedHoverPeek]);
 
