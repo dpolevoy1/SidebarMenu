@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Agentation } from "agentation";
 import {
   SidebarMenu,
@@ -39,9 +39,12 @@ const INITIAL_STARRED_IDS = [
   "chat-crm-mau",
   "chat-dove-daily",
 ];
+const THEME_TRANSITION_MS = 240;
 
 export default function App() {
+  const hasMountedRef = useRef(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [activeNavId, setActiveNavId] = useState<SidebarNavId>(
     "post-meeting-insights",
   );
@@ -75,12 +78,31 @@ export default function App() {
     }
   }, [starredChatIds, recentChats]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    root.setAttribute("data-theme-transition", "true");
+    const timer = window.setTimeout(() => {
+      root.removeAttribute("data-theme-transition");
+    }, THEME_TRANSITION_MS);
+    return () => {
+      window.clearTimeout(timer);
+      root.removeAttribute("data-theme-transition");
+    };
+  }, [darkModeEnabled]);
+
   return (
     <>
       <div className="appLayout">
         <SidebarMenu
           organizationName="Unilever"
           userName="Maximilian Metti"
+          darkModeEnabled={darkModeEnabled}
+          onDarkModeChange={setDarkModeEnabled}
           sidebarCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
           activeNavId={activeNavId}

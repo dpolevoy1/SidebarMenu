@@ -1,6 +1,6 @@
 # A.Team Assemble — Sidebar menu
 
-Vite + React + TypeScript demo app built around a production-style **sidebar navigation** (`SidebarMenu`): collapsible rail, hover “peek,” Starred/Recents chats, expandable sections, and design-system-aligned tooltips.
+Vite + React + TypeScript demo app built around a production-style **sidebar navigation** (`SidebarMenu`): collapsible rail, hover “peek,” Starred/Recents chats, expandable sections, workspace menu, light/dark theme, and UI aligned with the shared [**@assemble/design-system**](https://github.com/dpolevoy1/design-system) package (tokens + `Tooltip`).
 
 **Remote:** [github.com/dpolevoy1/SidebarMenu](https://github.com/dpolevoy1/SidebarMenu)
 
@@ -69,6 +69,7 @@ Other JSON files in `public/animations/` may exist for future UI (they are not a
 - **Hugeicons** (`@hugeicons/react`, `@hugeicons/core-free-icons`) — fallbacks and non-Lottie UI
 - **Lottie** (`lottie-react`) — animated sidebar nav icons
 - Optional **Agentation** dev integration in `App` (endpoint configurable)
+- **Design system** — [`@assemble/design-system`](https://github.com/dpolevoy1/design-system) from GitHub: color tokens (`tokens/color-palette.css`), `Tooltip`, and optional `ToggleIndicator`. Bump with `npm update @assemble/design-system` or pin a commit in `package.json`.
 
 ---
 
@@ -92,11 +93,11 @@ npm run preview  # serve production build locally
 
 | Path | Purpose |
 |------|---------|
-| `src/App.tsx` | Demo shell: sidebar collapse state, chat/starred ids, nav selection, `Agentation` mount |
-| `src/components/SidebarMenu/` | Sidebar UI, collapse/peek logic, keyboard shortcuts, Lottie icons, CSS module |
-| `src/components/Tooltip/` | Shared tooltip (cursor-anchored, hover-only) |
+| `src/App.tsx` | Demo shell: theme, sidebar collapse, chats, nav, `Agentation` mount |
+| `src/components/SidebarMenu/` | Sidebar UI, workspace switcher, collapse/peek, shortcuts, Lottie, CSS module |
+| `node_modules/@assemble/design-system` | Shared tokens + `Tooltip` (see design-system README) |
 | `public/animations/` | Lottie JSON assets served at `/animations/*.json` |
-| `src/index.css` | Global / Tailwind entry |
+| `src/index.css` | Global entry: imports design-system palette + Tailwind |
 
 Public API for the sidebar is exported from `src/components/SidebarMenu/index.ts` (`SidebarMenu`, defaults, `SidebarMenuProps`, `SidebarNavId`, `SidebarChatItem`).
 

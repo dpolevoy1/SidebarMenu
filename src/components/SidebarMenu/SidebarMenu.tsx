@@ -15,6 +15,7 @@ import {
   Brain03Icon,
   DocumentAttachmentIcon,
   FileViewIcon,
+  FolderGitIcon,
   LocationUser03Icon,
   PanelLeftOpenIcon,
   PinIcon,
@@ -51,6 +52,53 @@ const SIDEBAR_TOGGLE_SHORTCUT_DISPLAY = "⌘S";
 
 const NEW_QUESTION_SHORTCUT_DISPLAY_DEFAULT = "⌘Q";
 const NEW_QUESTION_SHORTCUT_ARIA = "Meta+Q";
+const WORKSPACE_DROPDOWN_PROFILE_EMAIL = "maximilian@a.team";
+const WORKSPACE_DROPDOWN_PROFILE_AVATAR_URL = `https://unavatar.io/${WORKSPACE_DROPDOWN_PROFILE_EMAIL}`;
+const WORKSPACE_MENU_ANIMATION_MS = 180;
+type RecentWorkspace = {
+  id: string;
+  name: string;
+  companyDomain: string;
+  logoGradient: string;
+};
+
+const RECENT_WORKSPACES: readonly RecentWorkspace[] = [
+  {
+    id: "unilever",
+    name: "Unilever",
+    companyDomain: "unilever.com",
+    logoGradient:
+      "linear-gradient(142deg, #002462 15.15%, #1851A8 47.49%, #67A7E4 92.31%)",
+  },
+  {
+    id: "astrazeneca",
+    name: "AstraZeneca",
+    companyDomain: "astrazeneca.com",
+    logoGradient:
+      "linear-gradient(142deg, #4A0B72 14%, #8E2DE2 52%, #CFA8FF 92%)",
+  },
+  {
+    id: "revlon",
+    name: "Revlon",
+    companyDomain: "revlon.com",
+    logoGradient:
+      "linear-gradient(142deg, #5A0C16 14%, #B31942 50%, #FF7AA0 92%)",
+  },
+  {
+    id: "abi",
+    name: "AB InBev",
+    companyDomain: "ab-inbev.com",
+    logoGradient:
+      "linear-gradient(142deg, #4A2A00 12%, #B36A00 52%, #F6C15B 92%)",
+  },
+  {
+    id: "dove",
+    name: "Dove Skincare",
+    companyDomain: "dove.com",
+    logoGradient:
+      "linear-gradient(142deg, #0E3A2E 14%, #1F8A70 52%, #8EE3CF 92%)",
+  },
+];
 
 function isTextEditingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -94,6 +142,8 @@ export type SidebarChatItem = { id: string; title: string };
 export interface SidebarMenuProps {
   organizationName: string;
   userName: string;
+  darkModeEnabled?: boolean;
+  onDarkModeChange?: (enabled: boolean) => void;
   logoSrc?: string;
   onWorkspaceNameClick?: () => void;
   activeNavId?: SidebarNavId;
@@ -635,6 +685,94 @@ function WorkspaceSwitcherChevron() {
   );
 }
 
+function WorkspaceMenuLogoMark({
+  gradient,
+  logoDomain,
+  workspaceName,
+}: {
+  gradient: string;
+  logoDomain: string;
+  workspaceName: string;
+}) {
+  const [logoUnavailable, setLogoUnavailable] = useState(false);
+  const logoSrc = `https://logo.clearbit.com/${logoDomain}?size=64`;
+
+  useEffect(() => {
+    setLogoUnavailable(false);
+  }, [logoDomain]);
+
+  if (logoSrc && !logoUnavailable) {
+    return (
+      <span className={styles.workspaceMenuWorkspaceLogoImageWrap} aria-hidden>
+        <img
+          className={styles.workspaceMenuWorkspaceLogoImage}
+          src={logoSrc}
+          alt={`${workspaceName} logo`}
+          loading="lazy"
+          onError={() => setLogoUnavailable(true)}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={styles.workspaceMenuWorkspaceLogo}
+      style={{ "--workspace-menu-logo-gradient": gradient } as React.CSSProperties}
+      aria-hidden
+    >
+      <svg
+        className={styles.workspaceMenuWorkspaceGlyph}
+        xmlns="http://www.w3.org/2000/svg"
+        width={12}
+        height={11}
+        viewBox="0 0 20 18"
+        fill="none"
+      >
+        <path
+          d="M10.4997 0.000291557C11.1738 -0.0116809 11.83 0.34557 12.1683 0.980736L19.783 15.2831C20.2629 16.1845 19.9201 17.3038 19.0177 17.7832C18.115 18.2625 16.9939 17.9205 16.514 17.019L10.4993 5.72168L8.67127 9.15609C8.13043 9.0056 7.61352 8.77942 7.14415 8.47712C6.56419 8.10356 6.04573 7.60721 5.63742 6.9803L8.83124 0.981176C9.1694 0.346007 9.82576 -0.0115039 10.4997 0.000291557Z"
+          fill="white"
+        />
+        <path
+          d="M2.8673 12.1814C3.37172 12.6156 3.91347 12.9994 4.4855 13.3301C4.98772 13.6205 5.51185 13.8688 6.05069 14.0772L4.4855 17.0185C4.0055 17.9197 2.88474 18.2619 1.98229 17.7828C1.07976 17.3035 0.737192 16.1841 1.21691 15.2827L2.8673 12.1814Z"
+          fill="white"
+        />
+        <path
+          d="M1.66745 2.00638C2.66545 1.92016 3.53998 2.71805 3.62059 3.78824C3.99076 8.7042 8.00995 10.7345 11.4442 9.94731L13.2043 13.4972C7.64239 15.3248 0.612992 12.1654 0.00594868 4.1007C-0.0744437 3.03045 0.6694 2.09275 1.66745 2.00638Z"
+          fill="white"
+          fillOpacity={0.7}
+        />
+        <path
+          d="M18.3264 2.00592C19.3246 2.08867 20.0715 3.02372 19.9946 4.09422C19.8099 6.66035 18.9851 8.72537 17.7689 10.2926L15.7918 6.30548C16.1049 5.57341 16.3113 4.73621 16.379 3.79471C16.4562 2.72422 17.3281 1.92336 18.3264 2.00592Z"
+          fill="white"
+          fillOpacity={0.7}
+        />
+      </svg>
+    </span>
+  );
+}
+
+function Moon02IconMark() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function NewQuestionIcon() {
   return (
     <span className={styles.newQuestionIcon} aria-hidden>
@@ -753,6 +891,8 @@ function ExpandableSubNavList({
 export function SidebarMenu({
   organizationName,
   userName,
+  darkModeEnabled = false,
+  onDarkModeChange,
   onWorkspaceNameClick,
   activeNavId = "post-meeting-insights",
   selectedChat = null,
@@ -817,6 +957,18 @@ export function SidebarMenu({
   );
   const menuScrollRef = useRef<HTMLElement>(null);
   const [headerScrolled, setHeaderScrolled] = useState(false);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [workspaceMenuMounted, setWorkspaceMenuMounted] = useState(false);
+  const [workspaceMenuClosing, setWorkspaceMenuClosing] = useState(false);
+  const [workspaceProfileAvatarUnavailable, setWorkspaceProfileAvatarUnavailable] =
+    useState(false);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
+    RECENT_WORKSPACES[0].id,
+  );
+  const workspaceMenuRef = useRef<HTMLDivElement>(null);
+  const workspaceMenuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   /**
    * Parent still has `sidebarCollapsed === true`, but pointer is over the menu `<nav>` or the collapsed
    * logo — show full-width peek. Clicking the logo hit-area pins via `onToggleCollapse`.
@@ -841,6 +993,13 @@ export function SidebarMenu({
     if (peekLeaveTimerRef.current !== null) {
       window.clearTimeout(peekLeaveTimerRef.current);
       peekLeaveTimerRef.current = null;
+    }
+  };
+
+  const clearWorkspaceMenuCloseTimer = () => {
+    if (workspaceMenuCloseTimerRef.current !== null) {
+      window.clearTimeout(workspaceMenuCloseTimerRef.current);
+      workspaceMenuCloseTimerRef.current = null;
     }
   };
 
@@ -889,6 +1048,41 @@ export function SidebarMenu({
       ro.disconnect();
     };
   }, [sidebarCollapsed, collapsedHoverPeek]);
+
+  useEffect(() => {
+    if (!workspaceMenuOpen) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      const menuRoot = workspaceMenuRef.current;
+      if (!menuRoot) return;
+      if (!menuRoot.contains(event.target as Node)) {
+        closeWorkspaceMenu();
+      }
+    };
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      closeWorkspaceMenu();
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [workspaceMenuOpen]);
+
+  useEffect(
+    () => () => {
+      clearWorkspaceMenuCloseTimer();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    setWorkspaceProfileAvatarUnavailable(false);
+  }, [userName]);
 
   useEffect(() => {
     if (!sidebarCollapsed) {
@@ -1230,6 +1424,49 @@ export function SidebarMenu({
     onToggleCollapse?.();
   };
 
+  const openWorkspaceMenu = () => {
+    clearWorkspaceMenuCloseTimer();
+    setWorkspaceMenuMounted(true);
+    setWorkspaceMenuClosing(false);
+    setWorkspaceMenuOpen(true);
+  };
+
+  const closeWorkspaceMenu = () => {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const delayMs = prefersReducedMotion ? 0 : WORKSPACE_MENU_ANIMATION_MS;
+    clearWorkspaceMenuCloseTimer();
+    setWorkspaceMenuOpen(false);
+    if (!workspaceMenuMounted) return;
+    if (delayMs === 0) {
+      setWorkspaceMenuClosing(false);
+      setWorkspaceMenuMounted(false);
+      return;
+    }
+    setWorkspaceMenuClosing(true);
+    workspaceMenuCloseTimerRef.current = window.setTimeout(() => {
+      workspaceMenuCloseTimerRef.current = null;
+      setWorkspaceMenuClosing(false);
+      setWorkspaceMenuMounted(false);
+    }, delayMs);
+  };
+
+  const handleWorkspaceMenuToggle = () => {
+    if (workspaceMenuOpen) {
+      closeWorkspaceMenu();
+      return;
+    }
+    onWorkspaceNameClick?.();
+    openWorkspaceMenu();
+  };
+
+  const workspaceFirstNameInitial =
+    userName.trim().charAt(0).toUpperCase() || "U";
+  const selectedWorkspaceGradient =
+    RECENT_WORKSPACES.find((workspace) => workspace.id === selectedWorkspaceId)
+      ?.logoGradient ?? DEFAULT_WORKSPACE_LOGO_GRADIENT;
+
   type NavButtonOptions = {
     /** Shortcut text on the right; fades in on row hover/focus (not a floating tooltip). */
     hoverShortcut?: string;
@@ -1332,7 +1569,7 @@ export function SidebarMenu({
                 className={styles.logoMark}
                 style={
                   {
-                    "--workspace-logo-gradient": DEFAULT_WORKSPACE_LOGO_GRADIENT,
+                    "--workspace-logo-gradient": selectedWorkspaceGradient,
                   } as React.CSSProperties
                 }
               >
@@ -1408,17 +1645,143 @@ export function SidebarMenu({
         </div>
         {!isCollapsedRail ? (
           <div className={styles.headline}>
-            <button
-              type="button"
-              className={styles.orgNameRow}
-              onClick={onWorkspaceNameClick}
-              aria-label="Open workspace switcher"
-            >
-              <p className={styles.orgName}>{organizationName}</p>
-              <span className={styles.orgNameChevron} aria-hidden>
-                <WorkspaceSwitcherChevron />
-              </span>
-            </button>
+            <div className={styles.workspaceMenuRoot} ref={workspaceMenuRef}>
+              <button
+                type="button"
+                className={styles.orgNameRow}
+                onClick={handleWorkspaceMenuToggle}
+                aria-label="Open workspace switcher"
+                aria-haspopup="menu"
+                aria-expanded={workspaceMenuOpen}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown" && !workspaceMenuOpen) {
+                    event.preventDefault();
+                    openWorkspaceMenu();
+                    onWorkspaceNameClick?.();
+                  }
+                }}
+              >
+                <p className={styles.orgName}>{organizationName}</p>
+                <span className={styles.orgNameChevron} aria-hidden>
+                  <WorkspaceSwitcherChevron />
+                </span>
+              </button>
+              {workspaceMenuMounted ? (
+                <div
+                  className={`${styles.workspaceMenuPopover} ${
+                    workspaceMenuClosing ? styles.workspaceMenuPopoverClosing : ""
+                  }`}
+                  role="menu"
+                  aria-label="Workspace menu"
+                >
+                  <div className={styles.workspaceMenuProfile}>
+                    {workspaceProfileAvatarUnavailable ? (
+                      <div className={styles.workspaceMenuProfileAvatarFallback} aria-hidden>
+                        {workspaceFirstNameInitial}
+                      </div>
+                    ) : (
+                      <img
+                        className={styles.workspaceMenuProfileAvatar}
+                        src={WORKSPACE_DROPDOWN_PROFILE_AVATAR_URL}
+                        alt=""
+                        loading="lazy"
+                        onError={() => setWorkspaceProfileAvatarUnavailable(true)}
+                      />
+                    )}
+                    <div className={styles.workspaceMenuProfileMeta}>
+                      <p className={styles.workspaceMenuProfileName}>{userName}</p>
+                      <p className={styles.workspaceMenuProfileEmail}>
+                        {WORKSPACE_DROPDOWN_PROFILE_EMAIL}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={styles.workspaceMenuBody}>
+                    <div className={styles.workspaceMenuSectionLabel}>
+                      Recently used workspaces
+                    </div>
+                    {RECENT_WORKSPACES.map((workspace) => (
+                      <button
+                        key={workspace.id}
+                        type="button"
+                        className={styles.workspaceMenuItem}
+                        role="menuitemradio"
+                        aria-checked={workspace.id === selectedWorkspaceId}
+                        onClick={() => {
+                          setSelectedWorkspaceId(workspace.id);
+                          closeWorkspaceMenu();
+                        }}
+                      >
+                        <WorkspaceMenuLogoMark
+                          gradient={workspace.logoGradient}
+                          logoDomain={workspace.companyDomain}
+                          workspaceName={workspace.name}
+                        />
+                        <span
+                          className={`${styles.workspaceMenuItemLabel} ${styles.workspaceMenuWorkspaceLabel}`}
+                        >
+                          {workspace.id === RECENT_WORKSPACES[0].id
+                            ? organizationName
+                            : workspace.name}
+                        </span>
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={styles.workspaceMenuItem}
+                      role="menuitem"
+                      onClick={closeWorkspaceMenu}
+                    >
+                      <HugeiconsIcon
+                        icon={FolderGitIcon}
+                        size={20}
+                        strokeWidth={1.75}
+                        color="currentColor"
+                        aria-hidden
+                      />
+                      <span className={styles.workspaceMenuItemLabel}>All workspaces</span>
+                      <span className={styles.workspaceMenuShortcutBadge}>
+                        {RECENT_WORKSPACES.length}
+                      </span>
+                    </button>
+                    <div className={styles.workspaceMenuSeparator} />
+                    <button
+                      type="button"
+                      className={styles.workspaceMenuItem}
+                      role="menuitemcheckbox"
+                      aria-checked={darkModeEnabled}
+                      onClick={() => onDarkModeChange?.(!darkModeEnabled)}
+                    >
+                      <Moon02IconMark />
+                      <span className={styles.workspaceMenuItemLabel}>Dark mode</span>
+                      <span
+                        className={`${styles.workspaceToggleIndicator} ${
+                          darkModeEnabled
+                            ? styles.workspaceToggleIndicatorOn
+                            : ""
+                        }`}
+                        aria-hidden
+                      />
+                    </button>
+                  </div>
+                  <div className={styles.workspaceMenuFooter}>
+                    <button
+                      type="button"
+                      className={styles.workspaceMenuSignOut}
+                      onClick={closeWorkspaceMenu}
+                    >
+                      <HugeiconsIcon
+                        icon={PanelLeftOpenIcon}
+                        size={16}
+                        strokeWidth={1.9}
+                        color="currentColor"
+                        aria-hidden
+                      />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
             <p className={styles.userName}>{userName}</p>
           </div>
         ) : null}
