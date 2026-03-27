@@ -261,7 +261,7 @@
   margin: 0;
   flex: 0 1 auto;
   min-width: 0;
-  max-width: calc(100% - 6px - 16px);
+  max-width: min(228px, calc(100% - 6px - 16px));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -303,6 +303,11 @@
 
 .userName {
   margin: 0;
+  width: 100%;
+  max-width: 252px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
