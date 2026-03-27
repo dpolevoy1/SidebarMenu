@@ -639,7 +639,7 @@ function NewQuestionIcon() {
         icon={PlusSignIcon}
         size={12}
         strokeWidth={2}
-        color="var(--color-neutral-white)"
+        color="var(--color-neutral-100)"
         aria-hidden
       />
     </span>

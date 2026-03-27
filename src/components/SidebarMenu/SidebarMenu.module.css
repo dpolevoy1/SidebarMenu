@@ -637,7 +637,7 @@
   margin: 0;
   padding: 0 6px;
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-neutral-100);
   font-family: Inter, system-ui, sans-serif;
   font-size: 10px;
   font-style: normal;
@@ -645,7 +645,7 @@
   line-height: 12px;
   letter-spacing: 0.15px;
   text-align: center;
-  color: var(--Secondary-600, #3e4a5e);
+  color: var(--Secondary-600);
   opacity: 0;
   pointer-events: none;
   transition:
@@ -758,7 +758,7 @@
   font-weight: 400;
   line-height: 22px;
   letter-spacing: 0.14px;
-  color: var(--Secondary-600, #3e4a5e);
+  color: var(--Secondary-600);
   text-align: left;
   cursor: pointer;
   transition:
@@ -952,8 +952,8 @@
 
 /* Recents: default gray star; orange when this chat is also in Starred */
 .chatRowRecent .chatStarBtn svg path {
-  fill: var(--Secondary-300, #c5ced9);
-  stroke: var(--Secondary-300, #c5ced9);
+  fill: var(--Secondary-300);
+  stroke: var(--Secondary-300);
 }
 
 .chatRowRecent .chatStarBtn.chatStarInStarred svg path {

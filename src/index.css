@@ -24,7 +24,7 @@ body {
 /* Custom scrollbar styling */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(62, 74, 94, 0.15) transparent;
+  scrollbar-color: color-mix(in srgb, var(--color-secondary-600) 15%, transparent) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -37,11 +37,11 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(62, 74, 94, 0.15);
+  background: color-mix(in srgb, var(--color-secondary-600) 15%, transparent);
   border-radius: 4px;
   transition: background 0.2s ease;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(62, 74, 94, 0.3);
+  background: color-mix(in srgb, var(--color-secondary-600) 30%, transparent);
 }
