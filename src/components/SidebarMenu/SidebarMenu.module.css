@@ -129,7 +129,14 @@
   display: none;
 }
 
-.sidebarCollapsed .navLabel,
+.sidebarCollapsed .navLabel {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
+/* Shortcut + chevron are position:absolute and already opacity:0 by default;
+   keep display:none so they don't intercept pointer events in the narrow rail. */
 .sidebarCollapsed .navShortcut,
 .sidebarCollapsed .navChevron {
   display: none !important;
@@ -163,6 +170,7 @@
   padding: 24px;
   flex-shrink: 0;
   overflow: visible;
+  border-bottom: 1px solid transparent;
   transition:
     padding var(--sidebar-rail-duration) var(--sidebar-rail-ease),
     border-color 0.15s ease,
@@ -636,13 +644,15 @@
 .navLabel {
   flex: 1 1 auto;
   min-width: 0;
+  max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
   transition:
     opacity var(--sidebar-rail-duration) var(--sidebar-rail-ease),
-    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+    transform var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    max-width var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
 /* Inline shortcut on the right (hover/focus); same layering idea as .navChevron */
@@ -1012,6 +1022,80 @@
   stroke: var(--color-additional-orange);
 }
 
+/* ─── Collapse entrance animation ─────────────────────────────────────────── */
+
+@keyframes sidebarIconFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes sidebarIconSlideFromTop {
+  from { transform: translateY(-12px); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes sidebarSectionTitleFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/*
+ * Section titles (Actions, Intelligence) and Starred/Recents headlines:
+ * - Collapse: display:none (instant — prevents layout shift / "moving up" effect)
+ * - Expand: fade in once the rail finishes opening (.sidebarRailAnimating is set
+ *   by JS for the duration of the animation, only when NOT collapsed)
+ */
+.sidebarRailAnimating:not(.sidebarCollapsed) .sectionLabel,
+.sidebarRailAnimating:not(.sidebarCollapsed) .sectionHeadline {
+  animation: sidebarSectionTitleFadeIn var(--sidebar-rail-duration) var(--sidebar-rail-ease) backwards;
+}
+
+@keyframes sidebarActiveBgFadeIn {
+  from { background: transparent; }
+  to   { background: var(--sidebar-selected-bg); }
+}
+
+/*
+ * When collapsed: icons slide in from -8px above.
+ * Two separate animations so fill-mode can differ:
+ *   - fade: fill both  → invisible during 0.1s delay, stays visible after
+ *   - slide: fill backwards only → starts at -8px during delay, returns to
+ *     CSS default (translateY 0) after so hover :transform transitions still work.
+ */
+.sidebarCollapsed .navIcon,
+.sidebarCollapsed .newQuestionIcon {
+  animation:
+    sidebarIconFadeIn       0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s both,
+    sidebarIconSlideFromTop 0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s backwards;
+}
+
+/*
+ * Selected row background: fade in on collapse (in sync with icons) and fade in
+ * on expand. The animation controls `background` so the rail-animating suppression
+ * below must exclude .navRowActive.
+ */
+.sidebarCollapsed .navRowActive {
+  animation: sidebarActiveBgFadeIn 0.4s cubic-bezier(0.5, 0, 0, 1) 0.3s both;
+}
+
+.sidebarRailAnimating:not(.sidebarCollapsed) .navRowActive {
+  animation: sidebarActiveBgFadeIn var(--sidebar-rail-duration) var(--sidebar-rail-ease) both;
+}
+
+/* During sidebar collapse/expand rail animation, suppress background transitions so the
+   selected-item background doesn't visually morph as the sidebar width changes.
+   .navRowActive is excluded — its background is handled by the animations above. */
+.sidebarRailAnimating .navRow:not(.navRowActive),
+.sidebarRailAnimating .chatRow,
+.sidebarRailAnimating .sectionHeadline {
+  transition:
+    color var(--nav-state-duration) var(--nav-state-ease),
+    gap var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    padding var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    width var(--sidebar-rail-duration) var(--sidebar-rail-ease),
+    max-width var(--sidebar-rail-duration) var(--sidebar-rail-ease);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sidebar {
     transition: none;
@@ -1086,6 +1170,15 @@
 
   .sidebarSubNavList:not(.sidebarSubNavListExpanded) .sidebarSubNavRowFade {
     opacity: 0;
+  }
+
+  .sidebarCollapsed .navIcon,
+  .sidebarCollapsed .newQuestionIcon,
+  .sidebarCollapsed .navRowActive,
+  .sidebarRailAnimating:not(.sidebarCollapsed) .navRowActive,
+  .sidebarRailAnimating:not(.sidebarCollapsed) .sectionLabel,
+  .sidebarRailAnimating:not(.sidebarCollapsed) .sectionHeadline {
+    animation: none;
   }
 
 }

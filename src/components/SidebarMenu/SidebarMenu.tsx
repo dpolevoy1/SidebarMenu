@@ -820,6 +820,8 @@ export function SidebarMenu({
    * logo — show full-width peek. Clicking the logo hit-area pins via `onToggleCollapse`.
    */
   const [collapsedHoverPeek, setCollapsedHoverPeek] = useState(false);
+  const [railAnimating, setRailAnimating] = useState(false);
+  const railAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const peekLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressAutoPeekUntilLeaveRef = useRef(false);
   const knowledgeLottieRef = useRef<LottieRefCurrentProps | null>(null);
@@ -888,6 +890,18 @@ export function SidebarMenu({
       setCollapsedHoverPeek(false);
     }
   }, [sidebarCollapsed]);
+
+  useEffect(() => {
+    if (railAnimTimerRef.current !== null) {
+      clearTimeout(railAnimTimerRef.current);
+    }
+    setRailAnimating(true);
+    // 0.42s expand + small buffer; collapse is 0.2s but we use the longer value for safety
+    railAnimTimerRef.current = setTimeout(() => {
+      setRailAnimating(false);
+      railAnimTimerRef.current = null;
+    }, 480);
+  }, [isCollapsedRail]);
 
   useEffect(() => () => clearPeekLeaveTimer(), []);
 
@@ -1240,7 +1254,7 @@ export function SidebarMenu({
     <aside
       className={`${styles.sidebar} ${
         isCollapsedRail ? styles.sidebarCollapsed : ""
-      }`}
+      } ${railAnimating ? styles.sidebarRailAnimating : ""}`}
       aria-label="Main navigation"
       onMouseEnter={sidebarCollapsed ? onSidebarPeekMouseEnter : undefined}
       onMouseLeave={sidebarCollapsed ? onSidebarPeekMouseLeave : undefined}
