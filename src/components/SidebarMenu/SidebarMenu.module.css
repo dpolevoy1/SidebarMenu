@@ -300,12 +300,12 @@
 }
 
 .header:hover .orgNameChevron,
-.header:focus-within .orgNameChevron {
+.header:has(:focus-visible) .orgNameChevron {
   opacity: 1;
 }
 
 .header:hover .orgNameChevron svg,
-.header:focus-within .orgNameChevron svg {
+.header:has(:focus-visible) .orgNameChevron svg {
   transform: scale(1.08);
 }
 
@@ -1144,7 +1144,7 @@
   }
 
   .header:hover .orgNameChevron svg,
-  .header:focus-within .orgNameChevron svg {
+  .header:has(:focus-visible) .orgNameChevron svg {
     transform: none;
   }
 

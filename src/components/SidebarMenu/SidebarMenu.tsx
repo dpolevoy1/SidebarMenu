@@ -830,14 +830,10 @@ export function SidebarMenu({
   const insightsLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const wisdomLottieRef = useRef<LottieRefCurrentProps | null>(null);
   const chiefOfStaffLottieRef = useRef<LottieRefCurrentProps | null>(null);
-  // Stores which expandable sub-nav was open at the moment of collapse, so it can be
-  // restored when the sidebar is expanded again. null = nothing to restore.
+  // Stores which expandable sub-nav was open at collapse-time; used to restore after expand.
   const subNavToRestoreRef = useRef<SidebarNavId | null>(null);
-  // Ref mirrors for the list-open states — read inside effects without adding to deps.
-  const chiefOfStaffListOpenRef = useRef(false);
-  const knowledgeListOpenRef = useRef(false);
-  const controlsListOpenRef = useRef(false);
-  const wisdomListOpenRef = useRef(false);
+  // Ensures collapse-time sub-nav capture happens once per collapsed cycle.
+  const didCaptureSubNavForCollapsedCycleRef = useRef(false);
 
   const clearPeekLeaveTimer = () => {
     if (peekLeaveTimerRef.current !== null) {
@@ -947,6 +943,35 @@ export function SidebarMenu({
     }
   };
 
+  const closeAllExpandableSubLists = () => {
+    setChiefOfStaffListOpen(false);
+    setKnowledgeListOpen(false);
+    setControlsListOpen(false);
+    setWisdomListOpen(false);
+  };
+
+  const expandableSubListIsOpenForId = (id: SidebarNavId): boolean => {
+    switch (id) {
+      case "chief-of-staff":
+        return chiefOfStaffListOpen;
+      case "knowledge":
+        return knowledgeListOpen;
+      case "controls":
+        return controlsListOpen;
+      case "wisdom":
+        return wisdomListOpen;
+      default:
+        return false;
+    }
+  };
+
+  const setExpandableSubListOpenForId = (id: SidebarNavId, open: boolean) => {
+    if (id === "chief-of-staff") setChiefOfStaffListOpen(open);
+    else if (id === "knowledge") setKnowledgeListOpen(open);
+    else if (id === "controls") setControlsListOpen(open);
+    else if (id === "wisdom") setWisdomListOpen(open);
+  };
+
   const expandableItemCountForNav = (id: SidebarNavId): number => {
     switch (id) {
       case "chief-of-staff":
@@ -1023,32 +1048,26 @@ export function SidebarMenu({
   const handleExpandableNavClick = (id: SidebarNavId) => {
     clearPendingNavTimeout();
 
-    if (activeNavId === id) {
-      if (id === "chief-of-staff") {
-        setChiefOfStaffListOpen((open) => !open);
-      } else if (id === "knowledge") {
-        setKnowledgeListOpen((open) => !open);
-      } else if (id === "controls") {
-        setControlsListOpen((open) => !open);
-      } else if (id === "wisdom") {
-        setWisdomListOpen((open) => !open);
+    // If this specific internal list is already open, allow collapsing it on click
+    // regardless of current `activeNavId` (fixes "can't collapse Chief of Staff").
+    if (expandableSubListIsOpenForId(id)) {
+      setExpandableSubListOpenForId(id, false);
+      // In hover-peek, a manual close should persist for the rest of this collapsed cycle.
+      if (sidebarCollapsed && collapsedHoverPeek && subNavToRestoreRef.current === id) {
+        subNavToRestoreRef.current = null;
       }
       onNavClick?.(id);
       return;
     }
 
-    if (activeExpandableSubListIsOpen()) {
-      closeActiveExpandableSubList();
-      const waitMs = subNavCloseDelayMs(
-        expandableItemCountForNav(activeNavId),
-      );
-      pendingNavTimeoutRef.current = setTimeout(() => {
-        pendingNavTimeoutRef.current = null;
-        completeExpandableNavigation(id);
-      }, waitMs);
-    } else {
-      completeExpandableNavigation(id);
+    // Expandable -> expandable should switch immediately to avoid visual jump.
+    // Close all first so we never keep multiple internal lists open in memory.
+    closeAllExpandableSubLists();
+    // In hover-peek, remember the newly opened expandable section.
+    if (sidebarCollapsed && collapsedHoverPeek) {
+      subNavToRestoreRef.current = id;
     }
+    completeExpandableNavigation(id);
   };
 
   useEffect(() => {
@@ -1057,28 +1076,24 @@ export function SidebarMenu({
     };
   }, []);
 
-  // Keep ref mirrors in sync so the collapse/expand effect can read them without deps.
-  useEffect(() => { chiefOfStaffListOpenRef.current = chiefOfStaffListOpen; });
-  useEffect(() => { knowledgeListOpenRef.current = knowledgeListOpen; });
-  useEffect(() => { controlsListOpenRef.current = controlsListOpen; });
-  useEffect(() => { wisdomListOpenRef.current = wisdomListOpen; });
-
   useEffect(() => {
     if (sidebarCollapsed && !collapsedHoverPeek) {
-      // Rail state: save whichever sub-nav is currently open, then close all.
-      // Re-evaluates on every rail entry (including returning from hover-peek) so
-      // the ref always reflects the last known open sub-nav.
-      if (chiefOfStaffListOpenRef.current) subNavToRestoreRef.current = "chief-of-staff";
-      else if (knowledgeListOpenRef.current) subNavToRestoreRef.current = "knowledge";
-      else if (controlsListOpenRef.current) subNavToRestoreRef.current = "controls";
-      else if (wisdomListOpenRef.current) subNavToRestoreRef.current = "wisdom";
-      // If nothing is open we keep the existing ref so a prior save is not lost.
+      // Capture once when entering collapsed rail. Subsequent state updates in the same
+      // collapsed cycle must not overwrite the saved value.
+      if (!didCaptureSubNavForCollapsedCycleRef.current) {
+        if (chiefOfStaffListOpen) subNavToRestoreRef.current = "chief-of-staff";
+        else if (knowledgeListOpen) subNavToRestoreRef.current = "knowledge";
+        else if (controlsListOpen) subNavToRestoreRef.current = "controls";
+        else if (wisdomListOpen) subNavToRestoreRef.current = "wisdom";
+        else subNavToRestoreRef.current = null;
 
-      clearPendingNavTimeout();
-      setChiefOfStaffListOpen(false);
-      setKnowledgeListOpen(false);
-      setControlsListOpen(false);
-      setWisdomListOpen(false);
+        clearPendingNavTimeout();
+        setChiefOfStaffListOpen(false);
+        setKnowledgeListOpen(false);
+        setControlsListOpen(false);
+        setWisdomListOpen(false);
+        didCaptureSubNavForCollapsedCycleRef.current = true;
+      }
     } else if (sidebarCollapsed && collapsedHoverPeek) {
       // Hover-peek: show the sub-nav that was open before collapsing.
       const id = subNavToRestoreRef.current;
@@ -1094,23 +1109,12 @@ export function SidebarMenu({
       else if (id === "controls") setControlsListOpen(true);
       else if (id === "wisdom") setWisdomListOpen(true);
       subNavToRestoreRef.current = null;
+      didCaptureSubNavForCollapsedCycleRef.current = false;
     }
-  }, [sidebarCollapsed, collapsedHoverPeek]);
-
-  useEffect(() => {
-    if (activeNavId !== "chief-of-staff") {
-      setChiefOfStaffListOpen(false);
-    }
-    if (activeNavId !== "knowledge") {
-      setKnowledgeListOpen(false);
-    }
-    if (activeNavId !== "controls") {
-      setControlsListOpen(false);
-    }
-    if (activeNavId !== "wisdom") {
-      setWisdomListOpen(false);
-    }
-  }, [activeNavId]);
+  }, [
+    sidebarCollapsed,
+    collapsedHoverPeek,
+  ]);
 
   const newQuestionShortcutBadge =
     newQuestionShortcut === null
