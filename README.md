@@ -16,6 +16,16 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 - **Pin:** Use the header control during peek, **click the logo hit-area**, or **⌘S** to keep the sidebar fully expanded.
 - **Header collapse/Pin** uses contextual icons (e.g. open panel, pin) and tooltips (“Collapse sidebar,” “Pin sidebar”) with **⌘S** where applicable.
 
+### Collapse / expand animations
+
+- **Nav labels** fade out via `opacity` + `max-width` transition (no snap) when collapsing.
+- **Section titles** (Actions, Intelligence, Starred, Recents) disappear instantly on collapse to prevent layout shift; fade in smoothly on expand.
+- **Icons & New Question** slide in from −12 px above with a fade (`opacity 0 → 1`) on collapse: 0.4 s duration, `cubic-bezier(0.5, 0, 0, 1)`.
+- **Staggered entrance:** each icon animates in sequence with a 0.1 s offset, base delay 0.2 s — New Question first, Wisdom last. Controlled via `--icon-index` CSS custom property on each nav row.
+- **Selected-row background** fades in / out in sync with its icon (`transparent → --sidebar-selected-bg`).
+- **Background transitions suppressed** during the rail width animation (via a JS-managed `sidebarRailAnimating` class) to prevent the selected-row highlight from morphing as the sidebar resizes.
+- **Scrolled-header divider** uses a pre-declared `transparent` border so `border-color` transitions in cleanly with no black-flash artifact.
+
 ### Navigation & content
 
 - **Actions:** New question, Chief of Staff (expandable sub-nav), Reports, Post meeting insights.
