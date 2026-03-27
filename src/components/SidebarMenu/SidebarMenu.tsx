@@ -639,7 +639,7 @@ function NewQuestionIcon() {
         icon={PlusSignIcon}
         size={12}
         strokeWidth={2}
-        color="var(--color-neutral-100)"
+        color="var(--color-neutral-white)"
         aria-hidden
       />
     </span>
@@ -652,6 +652,11 @@ const SUB_NAV_ROW_HEIGHT_PX = 38;
 const SUB_NAV_PX_PER_SEC = 420;
 const SUB_NAV_DURATION_MIN_MS = 340;
 const SUB_NAV_DURATION_MAX_MS = 680;
+/**
+ * Recents can be much longer than other lists; treat it as one animated block so rows
+ * don't appear/disappear line-by-line during section expand/collapse.
+ */
+const RECENTS_ANIMATION_STAGGER_SLOTS = 1;
 
 function subNavOpenDurationMs(itemCount: number): number {
   if (itemCount <= 0) return SUB_NAV_DURATION_MIN_MS;
@@ -837,6 +842,20 @@ export function SidebarMenu({
       .map((id) => byId.get(id))
       .filter((c): c is SidebarChatItem => c != null);
   }, [recentChats, starredChatIds]);
+  const starredOpenDurationMs = subNavOpenDurationMs(starredChatsOrdered.length);
+  const starredStaggerStepMs = subNavStaggerStepMs(
+    starredChatsOrdered.length,
+    starredOpenDurationMs,
+  );
+  const recentsAnimationSlots = Math.min(
+    recentChats.length,
+    RECENTS_ANIMATION_STAGGER_SLOTS,
+  );
+  const recentsOpenDurationMs = subNavOpenDurationMs(recentsAnimationSlots);
+  const recentsStaggerStepMs = subNavStaggerStepMs(
+    recentsAnimationSlots,
+    recentsOpenDurationMs,
+  );
 
   const clearPendingNavTimeout = () => {
     if (pendingNavTimeoutRef.current !== null) {
@@ -1509,52 +1528,69 @@ export function SidebarMenu({
                 </span>
               </span>
             </button>
-            {starredOpen
-              ? starredChatsOrdered.map((chat, index) => (
-                  <div
-                    key={`starred-${chat.id}`}
-                    className={`${styles.chatRow} ${styles.chatRowStarred} ${
+            <div
+              className={`${styles.sidebarSubNavList} ${
+                starredOpen ? styles.sidebarSubNavListExpanded : ""
+              }`}
+              style={
+                {
+                  "--n": starredChatsOrdered.length,
+                  "--sub-nav-max": `${starredChatsOrdered.length * SUB_NAV_ROW_HEIGHT_PX}px`,
+                  "--sub-nav-duration": `${starredOpenDurationMs}ms`,
+                  "--stagger-step": `${starredStaggerStepMs}ms`,
+                } as React.CSSProperties
+              }
+              role="group"
+              aria-label="Starred chats"
+              aria-hidden={!starredOpen}
+              {...(!starredOpen ? { inert: true as const } : {})}
+            >
+              {starredChatsOrdered.map((chat, index) => (
+                <div
+                  key={`starred-${chat.id}`}
+                  style={{ "--stagger": index } as React.CSSProperties}
+                  className={`${styles.chatRow} ${styles.chatRowStarred} ${styles.sidebarSubNavRowFade} ${
+                    selectedChat?.section === "starred" &&
+                    selectedChat.chatId === chat.id
+                      ? styles.chatRowSelected
+                      : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className={styles.chatRowMain}
+                    aria-current={
                       selectedChat?.section === "starred" &&
                       selectedChat.chatId === chat.id
-                        ? styles.chatRowSelected
-                        : ""
-                    }`}
+                        ? "true"
+                        : undefined
+                    }
+                    onClick={() => onChatClick?.(chat, "starred", index)}
                   >
+                    <span className={styles.chatLabel}>{chat.title}</span>
+                  </button>
+                  <span className={styles.chatStarTooltipWrap}>
                     <button
                       type="button"
-                      className={styles.chatRowMain}
-                      aria-current={
-                        selectedChat?.section === "starred" &&
-                        selectedChat.chatId === chat.id
-                          ? "true"
-                          : undefined
-                      }
-                      onClick={() => onChatClick?.(chat, "starred", index)}
+                      className={styles.chatStarBtn}
+                      aria-label={`Remove «${chat.title}» from Starred`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveStarredChat?.(chat.id);
+                      }}
                     >
-                      <span className={styles.chatLabel}>{chat.title}</span>
+                      <HugeiconsIcon
+                        icon={StarIcon}
+                        size={CHAT_STAR_ICON_PX}
+                        strokeWidth={1.5}
+                        color="currentColor"
+                        aria-hidden
+                      />
                     </button>
-                    <span className={styles.chatStarTooltipWrap}>
-                      <button
-                        type="button"
-                        className={styles.chatStarBtn}
-                        aria-label={`Remove «${chat.title}» from Starred`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveStarredChat?.(chat.id);
-                        }}
-                      >
-                        <HugeiconsIcon
-                          icon={StarIcon}
-                          size={CHAT_STAR_ICON_PX}
-                          strokeWidth={1.5}
-                          color="currentColor"
-                          aria-hidden
-                        />
-                      </button>
-                    </span>
-                  </div>
-                ))
-              : null}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
 
@@ -1572,61 +1608,82 @@ export function SidebarMenu({
               </span>
             </span>
           </button>
-          {recentsOpen
-            ? recentChats.map((chat, index) => {
-                const isStarredInList = starredIdSet.has(chat.id);
-                return (
-                  <div
-                    key={`recent-${chat.id}`}
-                    className={`${styles.chatRow} ${styles.chatRowRecent} ${
+          <div
+            className={`${styles.sidebarSubNavList} ${
+              recentsOpen ? styles.sidebarSubNavListExpanded : ""
+            }`}
+            style={
+              {
+                "--n": recentsAnimationSlots,
+                "--sub-nav-max": `${recentChats.length * SUB_NAV_ROW_HEIGHT_PX}px`,
+                "--sub-nav-duration": `${recentsOpenDurationMs}ms`,
+                "--stagger-step": `${recentsStaggerStepMs}ms`,
+              } as React.CSSProperties
+            }
+            role="group"
+            aria-label="Recent chats"
+            aria-hidden={!recentsOpen}
+            {...(!recentsOpen ? { inert: true as const } : {})}
+          >
+            {recentChats.map((chat, index) => {
+              const isStarredInList = starredIdSet.has(chat.id);
+              return (
+                <div
+                  key={`recent-${chat.id}`}
+                  style={
+                    {
+                      "--stagger": Math.min(index, recentsAnimationSlots - 1),
+                    } as React.CSSProperties
+                  }
+                  className={`${styles.chatRow} ${styles.chatRowRecent} ${styles.sidebarSubNavRowFade} ${
+                    selectedChat?.section === "recents" &&
+                    selectedChat.chatId === chat.id
+                      ? styles.chatRowSelected
+                      : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className={styles.chatRowMain}
+                    aria-current={
                       selectedChat?.section === "recents" &&
                       selectedChat.chatId === chat.id
-                        ? styles.chatRowSelected
-                        : ""
-                    }`}
+                        ? "true"
+                        : undefined
+                    }
+                    onClick={() => onChatClick?.(chat, "recents", index)}
                   >
+                    <span className={styles.chatLabel}>{chat.title}</span>
+                  </button>
+                  <span className={styles.chatStarTooltipWrap}>
                     <button
                       type="button"
-                      className={styles.chatRowMain}
-                      aria-current={
-                        selectedChat?.section === "recents" &&
-                        selectedChat.chatId === chat.id
-                          ? "true"
-                          : undefined
+                      className={`${styles.chatStarBtn} ${
+                        isStarredInList ? styles.chatStarInStarred : ""
+                      }`}
+                      aria-label={
+                        isStarredInList
+                          ? `Remove «${chat.title}» from Starred`
+                          : `Add «${chat.title}» to Starred`
                       }
-                      onClick={() => onChatClick?.(chat, "recents", index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleRecentStar?.(chat.id);
+                      }}
                     >
-                      <span className={styles.chatLabel}>{chat.title}</span>
+                      <HugeiconsIcon
+                        icon={StarIcon}
+                        size={CHAT_STAR_ICON_PX}
+                        strokeWidth={1.5}
+                        color="currentColor"
+                        aria-hidden
+                      />
                     </button>
-                    <span className={styles.chatStarTooltipWrap}>
-                      <button
-                        type="button"
-                        className={`${styles.chatStarBtn} ${
-                          isStarredInList ? styles.chatStarInStarred : ""
-                        }`}
-                        aria-label={
-                          isStarredInList
-                            ? `Remove «${chat.title}» from Starred`
-                            : `Add «${chat.title}» to Starred`
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleRecentStar?.(chat.id);
-                        }}
-                      >
-                        <HugeiconsIcon
-                          icon={StarIcon}
-                          size={CHAT_STAR_ICON_PX}
-                          strokeWidth={1.5}
-                          color="currentColor"
-                          aria-hidden
-                        />
-                      </button>
-                    </span>
-                  </div>
-                );
-              })
-            : null}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
         {isCollapsedRail ? (
           <div className={styles.menuCollapsedSpacer} aria-hidden />
