@@ -13,7 +13,7 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 - **Expanded width** (~300px) with org headline, user block, and full labels.
 - **Collapsed rail** (~68px): icon-first nav; section titles and nav chevrons/labels hide per CSS.
 - **Main content viewport:** A flexible, scrollable surface sits to the right of the sidebar (`.contentViewport`) with 16 px top/right/bottom spacing, 24 px corner radius, a subtle top gradient layer (18 px top radius), and a light default shadow that subtly elevates on hover.
-- **Workspace switcher trigger:** In expanded mode, the workspace name row (name + chevron) is a clickable control (`button`) intended to open a workspace dropdown.
+- **Workspace switcher trigger:** In expanded mode, the workspace name row (name + chevron) opens a workspace dropdown menu (profile row, recent workspaces, dark mode toggle, and sign-out action).
 - **Hover peek:** While collapsed, hovering the **logo** or an **interactive nav control** (button, link, etc.) temporarily expands the sidebar to full width. Empty padding and the bottom spacer do **not** trigger peek (parent still treats it as “collapsed” until you pin).
 - **Pin:** Use the header control during peek, **click the logo hit-area**, or **⌘S** to keep the sidebar fully expanded.
 - **Header collapse/Pin** uses contextual icons (e.g. open panel, pin) and tooltips (“Collapse sidebar,” “Pin sidebar”) with **⌘S** where applicable.
@@ -34,6 +34,7 @@ Vite + React + TypeScript demo app built around a production-style **sidebar nav
 - **Actions:** New question, Chief of Staff (expandable sub-nav), Reports, Post meeting insights.
 - **Intelligence:** Knowledge, Controls, Wisdom — each can expose an expandable sub-list with staggered open/close motion.
 - **Starred & Recents:** Chats are modeled as `{ id, title }` (`SidebarChatItem`). Starred is a **filtered subset** of recents by id (`starredChatIds`), order follows recents. Rows support star/unstar and selection by **chat id**.
+- **Workspace dropdown:** Includes current user profile summary, a "Recently used workspaces" list (with selected workspace state), an "All workspaces" row with workspace count, a dark mode toggle, and footer sign-out action.
 
 ### Sidebar Lottie icons
 
@@ -94,7 +95,7 @@ npm run preview  # serve production build locally
 
 | Path | Purpose |
 |------|---------|
-| `src/App.tsx` | Demo shell: theme, sidebar collapse, chats, nav, `Agentation` mount |
+| `src/App.tsx` | Demo shell: global theme (`data-theme` light/dark), sidebar collapse, chats, nav, `Agentation` mount |
 | `src/components/SidebarMenu/` | Sidebar UI, workspace switcher, collapse/peek, shortcuts, Lottie, CSS module |
 | `node_modules/@assemble/design-system` | Shared tokens + `Tooltip` (see design-system README) |
 | `public/animations/` | Lottie JSON assets served at `/animations/*.json` |
@@ -109,7 +110,8 @@ Public API for the sidebar is exported from `src/components/SidebarMenu/index.ts
 - Pass **`starredChatIds`**, **`recentChats`**, **`selectedChat`**, **`onChatClick`**, **`onToggleRecentStar`**, **`onRemoveStarredChat`** to drive chat lists from your app.
 - **`onToggleCollapse`** + **`sidebarCollapsed`** control pinned expanded vs rail.
 - **`newQuestionShortcut`**: override label text, or `null` to hide the shortcut badge and disable **⌘Q** handling from the menu component.
-- **`onWorkspaceNameClick`**: callback for clicking the workspace name row (reserved for opening workspace dropdown/switcher UI).
+- **`onWorkspaceNameClick`**: callback fired when opening the workspace dropdown via the workspace name row.
+- **`darkModeEnabled`** + **`onDarkModeChange`**: controlled dark mode API for the sidebar dropdown toggle; app-level implementation in `App` updates `document.documentElement[data-theme]`.
 
 ---
 
