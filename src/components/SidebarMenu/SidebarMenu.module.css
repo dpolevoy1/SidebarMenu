@@ -883,6 +883,24 @@
   outline-offset: 1px;
 }
 
+:global(:root[data-theme="dark"]) .workspaceMenuSignOut {
+  background: var(--color-primary-100);
+  border-color: var(--color-neutral-300);
+  color: var(--color-secondary-700);
+}
+
+:global(:root[data-theme="dark"]) .workspaceMenuSignOut:hover {
+  background: var(--color-primary-300-hover);
+  border-color: var(--color-secondary-300);
+  color: var(--color-secondary-700);
+}
+
+:global(:root[data-theme="dark"]) .workspaceMenuSignOut:active {
+  background: var(--color-primary-200);
+  border-color: var(--color-secondary-300);
+  color: var(--color-secondary-700);
+}
+
 .workspaceMenuSignOut .workspaceMenuItemLabel {
   flex: 0 0 auto;
   width: fit-content;

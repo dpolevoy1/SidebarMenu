@@ -689,17 +689,16 @@ function WorkspaceMenuLogoMark({
   gradient,
   logoDomain,
   workspaceName,
+  logoUnavailable = false,
+  onLogoError,
 }: {
   gradient: string;
   logoDomain: string;
   workspaceName: string;
+  logoUnavailable?: boolean;
+  onLogoError?: () => void;
 }) {
-  const [logoUnavailable, setLogoUnavailable] = useState(false);
   const logoSrc = `https://logo.clearbit.com/${logoDomain}?size=64`;
-
-  useEffect(() => {
-    setLogoUnavailable(false);
-  }, [logoDomain]);
 
   if (logoSrc && !logoUnavailable) {
     return (
@@ -708,8 +707,8 @@ function WorkspaceMenuLogoMark({
           className={styles.workspaceMenuWorkspaceLogoImage}
           src={logoSrc}
           alt={`${workspaceName} logo`}
-          loading="lazy"
-          onError={() => setLogoUnavailable(true)}
+          loading="eager"
+          onError={onLogoError}
         />
       </span>
     );
@@ -962,6 +961,8 @@ export function SidebarMenu({
   const [workspaceMenuClosing, setWorkspaceMenuClosing] = useState(false);
   const [workspaceProfileAvatarUnavailable, setWorkspaceProfileAvatarUnavailable] =
     useState(false);
+  const [workspaceLogoUnavailableById, setWorkspaceLogoUnavailableById] =
+    useState<Record<string, boolean>>({});
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
     RECENT_WORKSPACES[0].id,
   );
@@ -1717,6 +1718,14 @@ export function SidebarMenu({
                           gradient={workspace.logoGradient}
                           logoDomain={workspace.companyDomain}
                           workspaceName={workspace.name}
+                          logoUnavailable={
+                            workspaceLogoUnavailableById[workspace.id] ?? false
+                          }
+                          onLogoError={() =>
+                            setWorkspaceLogoUnavailableById((prev) =>
+                              prev[workspace.id] ? prev : { ...prev, [workspace.id]: true },
+                            )
+                          }
                         />
                         <span
                           className={`${styles.workspaceMenuItemLabel} ${styles.workspaceMenuWorkspaceLabel}`}
