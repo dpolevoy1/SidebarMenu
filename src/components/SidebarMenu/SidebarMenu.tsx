@@ -1771,13 +1771,6 @@ export function SidebarMenu({
                       className={styles.workspaceMenuSignOut}
                       onClick={closeWorkspaceMenu}
                     >
-                      <HugeiconsIcon
-                        icon={PanelLeftOpenIcon}
-                        size={20}
-                        strokeWidth={1.75}
-                        color="currentColor"
-                        aria-hidden
-                      />
                       <span className={styles.workspaceMenuItemLabel}>Sign out</span>
                     </button>
                   </div>
