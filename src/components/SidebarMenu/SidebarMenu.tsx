@@ -142,6 +142,8 @@ export type SidebarChatItem = { id: string; title: string };
 export interface SidebarMenuProps {
   organizationName: string;
   userName: string;
+  /** Shows loading treatment and disables sidebar interactions while data is pending. */
+  isLoading?: boolean;
   darkModeEnabled?: boolean;
   onDarkModeChange?: (enabled: boolean) => void;
   logoSrc?: string;
@@ -890,6 +892,7 @@ function ExpandableSubNavList({
 export function SidebarMenu({
   organizationName,
   userName,
+  isLoading = false,
   darkModeEnabled = false,
   onDarkModeChange,
   onWorkspaceNameClick,
@@ -1793,8 +1796,9 @@ export function SidebarMenu({
 
       <nav
         ref={menuScrollRef}
-        className={styles.menu}
+        className={`${styles.menu} ${isLoading ? styles.menuLoading : ""}`.trim()}
         onMouseOver={sidebarCollapsed ? onNavPeekMouseOver : undefined}
+        aria-busy={isLoading}
       >
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Actions</p>

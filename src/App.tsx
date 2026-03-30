@@ -40,9 +40,11 @@ const INITIAL_STARRED_IDS = [
   "chat-dove-daily",
 ];
 const THEME_TRANSITION_MS = 220;
+const SIDEBAR_LOADING_MS = 1400;
 
 export default function App() {
   const hasMountedRef = useRef(false);
+  const [sidebarLoading, setSidebarLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [activeNavId, setActiveNavId] = useState<SidebarNavId>(
@@ -67,6 +69,11 @@ export default function App() {
     section: "starred" | "recents";
     chatId: string;
   } | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSidebarLoading(false), SIDEBAR_LOADING_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const starred = new Set(starredChatIds);
@@ -106,6 +113,7 @@ export default function App() {
         <SidebarMenu
           organizationName="Unilever"
           userName="Maximilian Metti"
+          isLoading={sidebarLoading}
           darkModeEnabled={darkModeEnabled}
           onDarkModeChange={setDarkModeEnabled}
           sidebarCollapsed={sidebarCollapsed}

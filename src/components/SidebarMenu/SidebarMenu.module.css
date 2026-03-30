@@ -860,6 +860,74 @@
   transition: padding var(--sidebar-rail-duration) var(--sidebar-rail-ease);
 }
 
+@keyframes sidebarLoadingShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.menuLoading {
+  pointer-events: none;
+}
+
+/* Sidebar loading state: keep row geometry, replace text with skeleton bars. */
+.menuLoading .sectionLabel,
+.menuLoading .sectionHeadlineLabel,
+.menuLoading .navLabel,
+.menuLoading .chatLabel {
+  color: transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-secondary-300) 46%, transparent) 20%,
+      color-mix(in srgb, var(--color-secondary-300) 68%, transparent) 50%,
+      color-mix(in srgb, var(--color-secondary-300) 46%, transparent) 80%
+    )
+    0 0 / 220% 100% no-repeat;
+  animation: sidebarLoadingShimmer 1.3s ease-in-out infinite;
+}
+
+.menuLoading .sectionLabel {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  height: 12px;
+}
+
+.menuLoading .sectionHeadlineLabel {
+  width: 62px;
+  min-width: 62px;
+  max-width: 62px;
+  height: 12px;
+}
+
+.menuLoading .navLabel {
+  width: clamp(116px, 54%, 164px);
+  min-width: 116px;
+  max-width: 164px;
+  height: 12px;
+}
+
+.menuLoading .chatLabel {
+  width: clamp(144px, 64%, 212px);
+  min-width: 144px;
+  max-width: 212px;
+  height: 12px;
+}
+
+.menuLoading .navIcon,
+.menuLoading .newQuestionIcon,
+.menuLoading .chatStarTooltipWrap,
+.menuLoading .navChevron,
+.menuLoading .navShortcut,
+.menuLoading .sectionHeadChevron {
+  opacity: 0;
+}
+
 .section {
   display: flex;
   flex-direction: column;
